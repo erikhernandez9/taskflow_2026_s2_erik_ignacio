@@ -2,9 +2,31 @@ import { NextFunction, Request, Response } from 'express';
 import { db } from '../../lib/db';
 import { badRequest, conflict, forbidden, notFound } from '../../lib/http';
 import { parsePublicId, toPublicId } from '../../lib/ids';
-import { assertOptionalString } from '../../lib/validation';
+import { assertEmail, assertOptionalString } from '../../lib/validation';
 
-const EMAIL_CHECK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+async function loadProjectOrThrow(rawId: unknown) {
+  const id = parsePublicId(rawId, 'proj');
+  if (id === null) throw notFound('Project not found');
+
+  const project = await db.project.findUnique({ where: { id } });
+  if (!project) throw notFound('Project not found');
+
+  return project;
+}
+
+async function requireOwnerOrHideProject(
+  project: { id: number; ownerId: number },
+  userId: number,
+  forbiddenMessage: string,
+): Promise<void> {
+  if (project.ownerId === userId) return;
+
+  const membership = await db.projectMember.findUnique({
+    where: { projectId_userId: { projectId: project.id, userId } },
+  });
+  if (membership) throw forbidden(forbiddenMessage);
+  throw notFound('Project not found');
+}
 
 function serialize(p: {
   id: number;
@@ -70,18 +92,9 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const id = parsePublicId(req.params.projectId, 'proj');
-    if (id === null) throw notFound('Project not found');
-
-    const project = await db.project.findUnique({ where: { id } });
-    if (!project) throw notFound('Project not found');
-    if (project.ownerId !== userId) {
-      const membership = await db.projectMember.findUnique({
-        where: { projectId_userId: { projectId: id, userId } },
-      });
-      if (membership) throw forbidden('Only the project owner can edit it');
-      throw notFound('Project not found');
-    }
+    const project = await loadProjectOrThrow(req.params.projectId);
+    const id = project.id;
+    await requireOwnerOrHideProject(project, userId, 'Only the project owner can edit it');
 
     const data: { name?: string; description?: string | null } = {};
 
@@ -110,20 +123,10 @@ export async function update(req: Request, res: Response, next: NextFunction): P
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const id = parsePublicId(req.params.projectId, 'proj');
-    if (id === null) throw notFound('Project not found');
+    const project = await loadProjectOrThrow(req.params.projectId);
+    await requireOwnerOrHideProject(project, userId, 'Only the project owner can delete it');
 
-    const project = await db.project.findUnique({ where: { id } });
-    if (!project) throw notFound('Project not found');
-    if (project.ownerId !== userId) {
-      const membership = await db.projectMember.findUnique({
-        where: { projectId_userId: { projectId: id, userId } },
-      });
-      if (membership) throw forbidden('Only the project owner can delete it');
-      throw notFound('Project not found');
-    }
-
-    await db.project.delete({ where: { id } });
+    await db.project.delete({ where: { id: project.id } });
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -133,15 +136,11 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
 export async function addMember(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const id = parsePublicId(req.params.projectId, 'proj');
-    if (id === null) throw notFound('Project not found');
-
-    const project = await db.project.findUnique({ where: { id } });
-    if (!project) throw notFound('Project not found');
+    const project = await loadProjectOrThrow(req.params.projectId);
+    const id = project.id;
     if (project.ownerId !== userId) throw forbidden('Only the project owner can manage members');
 
-    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-    if (!EMAIL_CHECK.test(email)) throw badRequest('email must be a valid address');
+    const email = assertEmail(req.body?.email);
 
     const user = await db.user.findUnique({ where: { email } });
     if (!user) throw notFound('No user found with that email');
@@ -166,12 +165,11 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
 export async function removeMember(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const actingUserId = req.user!.userId;
-    const id = parsePublicId(req.params.projectId, 'proj');
     const memberId = parsePublicId(req.params.userId, 'user');
-    if (id === null || memberId === null) throw notFound('Project not found');
+    if (memberId === null) throw notFound('Project not found');
 
-    const project = await db.project.findUnique({ where: { id } });
-    if (!project) throw notFound('Project not found');
+    const project = await loadProjectOrThrow(req.params.projectId);
+    const id = project.id;
     if (project.ownerId !== actingUserId) {
       throw forbidden('Only the project owner can manage members');
     }
