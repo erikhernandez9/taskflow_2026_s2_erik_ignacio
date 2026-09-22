@@ -1,0 +1,225 @@
+{
+  "info": {
+    "name": "TaskFlow — Tareas (ciclo de vida) — Clase 5",
+    "description": "Colección de exploración usada antes de automatizar con Supertest. Cubre create/update/delete de tareas, casos límite y los 5 hallazgos documentados en BUG_REPORT.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "tokenOwner", "value": "" },
+    { "key": "tokenOutsider", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Setup",
+      "item": [
+        {
+          "name": "Registrar owner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@postman.test\",\n  \"password\": \"Password1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar outsider (no miembro)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"outsider@postman.test\",\n  \"password\": \"Password1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear proyecto",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/projects",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto Postman\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Crear tarea — equivalencia y limites",
+      "item": [
+        {
+          "name": "Happy path: crear tarea valida",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Implementar login\",\n  \"priority\": \"HIGH\"\n}" }
+          }
+        },
+        {
+          "name": "Limite: title de 2 caracteres (invalido, esperado 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"ab\"\n}" }
+          }
+        },
+        {
+          "name": "Equivalencia: priority invalida URGENT (esperado 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Tarea rota\",\n  \"priority\": \"URGENT\"\n}" }
+          }
+        },
+        {
+          "name": "HALLAZGO #4: dueDate 2026-01-15 (revisar corrimiento de dia)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Tarea con fecha\",\n  \"dueDate\": \"2026-01-15\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Cambiar estado — tabla de decision",
+      "item": [
+        {
+          "name": "Valida: TODO -> IN_PROGRESS",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}" }
+          }
+        },
+        {
+          "name": "HALLAZGO #3: TODO -> DONE directo (deberia ser 422, revisar)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"DONE\"\n}" }
+          }
+        },
+        {
+          "name": "Invalida (bloqueada): DONE -> TODO (esperado 422)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"TODO\"\n}" }
+          }
+        },
+        {
+          "name": "Status inexistente EN_REVISION (esperado 400, no 422)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"EN_REVISION\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Auth vs authz",
+      "item": [
+        {
+          "name": "401: PATCH sin token",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Sin token\"\n}" }
+          }
+        },
+        {
+          "name": "HALLAZGO #1: PATCH con outsider no-miembro (esperado 403, revisar)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOutsider}}" }
+            ],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Editado por intruso\"\n}" }
+          }
+        },
+        {
+          "name": "HALLAZGO #1 (bis): DELETE con outsider no-miembro (esperado 403, revisar)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOutsider}}" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}"
+          }
+        },
+        {
+          "name": "404: DELETE tarea inexistente (task-999999)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOwner}}" }],
+            "url": "{{baseUrl}}/tasks/task-999999"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Proyectos — name (bonus HALLAZGO #5)",
+      "item": [
+        {
+          "name": "HALLAZGO #5: crear proyecto con name vacio (esperado 400, revisar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenOwner}}" }
+            ],
+            "url": "{{baseUrl}}/projects",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}
