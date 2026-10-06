@@ -100,6 +100,20 @@ export class ApiClient {
     return { id: body.id, title: body.title };
   }
 
+  async updateTask(
+    session: Session,
+    taskId: string,
+    patch: Record<string, unknown>,
+  ): Promise<void> {
+    await ok(
+      await this.request.patch(this.url(`/tasks/${taskId}`), {
+        headers: this.authFor(session),
+        data: patch,
+      }),
+      'updateTask',
+    );
+  }
+
   async addMember(session: Session, projectId: string, email: string): Promise<void> {
     await ok(
       await this.request.post(this.url(`/projects/${projectId}/members`), {

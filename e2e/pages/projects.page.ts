@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { BasePage } from './base.page';
+import { ProjectCardComponent, toComponents } from '../components';
 
 export class ProjectsPage extends BasePage {
   get root(): Locator {
@@ -10,13 +11,24 @@ export class ProjectsPage extends BasePage {
     await this.navigate('/projects');
   }
 
-  get projectCards(): Locator {
-    return this.page.getByTestId('project-card');
+  get createForm(): Locator {
+    return this.page.getByTestId('project-create-form');
   }
 
-  cardByName(name: string): Locator {
-    const nameLocator = this.page.getByTestId('project-card-name').filter({ hasText: name });
-    return this.page.getByTestId('project-card').filter({ has: nameLocator });
+  // --- project-card (la pieza repetida) ---
+
+  get cards(): Locator {
+    return this.page.getByTestId('project-list').getByTestId(ProjectCardComponent.TEST_ID);
+  }
+
+  async projectCards(): Promise<ProjectCardComponent[]> {
+    return toComponents(this.cards, (root) => new ProjectCardComponent(root));
+  }
+
+  cardByName(name: string): ProjectCardComponent {
+    const nameLink = this.page.getByTestId('project-card-name').filter({ hasText: name });
+    const root = this.page.getByTestId(ProjectCardComponent.TEST_ID).filter({ has: nameLink });
+    return new ProjectCardComponent(root);
   }
 
   async createProject(name: string, description?: string): Promise<void> {
@@ -25,9 +37,5 @@ export class ProjectsPage extends BasePage {
       await this.page.getByTestId('project-description-input').fill(description);
     }
     await this.page.getByTestId('project-create-submit').click();
-  }
-
-  async openProject(name: string): Promise<void> {
-    await this.cardByName(name).getByTestId('project-card-name').click();
   }
 }

@@ -184,7 +184,10 @@ apuntar la suite con `E2E_WEB_URL=http://localhost:5174 npm run test:e2e`.
 
 El framework usa Page Objects para las pantallas y **Component Objects** para
 las piezas que se repiten dentro de ellas (`task-card`, `comment-item`,
-`member-item`). El porqué está documentado en
+`member-item`, `project-card` y `tag-chip`). Los specs cubren autenticación y
+guard de rutas, alta y validaciones de proyectos, alta/filtros/contadores del
+tablero, edición de tarea con estados, etiquetas e historial, comentarios y
+miembros. El porqué de la arquitectura está documentado en
 `docs/adr/0001-component-objects-para-piezas-repetidas.md`; cómo trabajar sobre
 el framework, en `e2e/README.md`.
 

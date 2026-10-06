@@ -40,7 +40,9 @@ e2e/
 │   ├── base.component.ts  # raíz anclada + toComponents()
 │   ├── task-card.component.ts
 │   ├── comment-item.component.ts
-│   └── member-item.component.ts
+│   ├── member-item.component.ts
+│   ├── project-card.component.ts
+│   └── tag-chip.component.ts
 ├── pages/                 # Page Objects: UNA pantalla cada uno
 │   ├── base.page.ts       # navegación + chrome común
 │   ├── login.page.ts
@@ -52,6 +54,13 @@ e2e/
 │   ├── api-client.ts      # arrange por API (no por UI)
 │   └── fixtures.ts        # fixtures de Playwright: api, owner, signIn, páginas
 └── specs/                 # los tests
+    ├── auth.spec.ts        # login, registro, logout, guard de rutas
+    ├── projects.spec.ts    # alta, validaciones, vacío, navegación
+    ├── board.spec.ts       # task-card
+    ├── board-filters.spec.ts  # alta, filtros, búsqueda, contadores
+    ├── task-detail.spec.ts # comment-item
+    ├── task-edit.spec.ts   # edición, estado, etiquetas, historial
+    └── members.spec.ts     # member-item
 ```
 
 ## Convenciones
@@ -73,6 +82,27 @@ depende del seed.
 **Login por `localStorage`.** El fixture `signIn` siembra el token antes de la
 primera navegación (ver `client/src/lib/api.ts`). El login por pantalla se
 prueba en su propio spec, no como peaje de entrada de los demás.
+
+## Sincronización
+
+Dos cosas de esta app condicionan cómo se escriben los métodos. Están
+documentadas en el ADR y vale repetirlas acá porque se pagan caro si se olvidan:
+
+**`navigate()` espera a que la red se aquiete, no solo al elemento raíz.** El
+cliente corre con `React.StrictMode`: en desarrollo los efectos se invocan dos
+veces, así que `loadTask()` responde dos veces y la segunda respuesta vuelve a
+sincronizar el formulario, pisando lo que el test tipeó. La pantalla ya es
+visible desde la primera respuesta, así que esperar al root no alcanza.
+
+**Para acciones que disparan una request, usar `clickAndWaitForApi()`.** Esperar
+a que un botón se vuelva a habilitar no sirve: el chequeo pasa antes de que
+React renderice el estado deshabilitado y deja la request en vuelo, así que un
+`reload()` posterior la cancela. Lo mismo vale para encadenar dos acciones sobre
+el mismo formulario: `addTag()` espera a que aparezca el chip antes de volver,
+porque el cliente limpia el input de forma asíncrona.
+
+Si un test falla solo cuando corre con varios workers, es casi seguro una de
+estas dos.
 
 ## Agregar un Component Object
 

@@ -1,7 +1,7 @@
 import type { Locator } from '@playwright/test';
 import { BasePage } from './base.page';
-import { CommentItemComponent, toComponents } from '../components';
-import type { TaskStatus } from '../config';
+import { CommentItemComponent, TagChipComponent, toComponents } from '../components';
+import type { TaskPriority, TaskStatus } from '../config';
 
 /**
  * Page Object del detalle de tarea.
@@ -48,9 +48,31 @@ export class TaskDetailPage extends BasePage {
     return this.page.getByTestId('task-save-button');
   }
 
+  async fillForm(fields: {
+    title?: string;
+    description?: string;
+    priority?: TaskPriority;
+  }): Promise<void> {
+    if (fields.title !== undefined) await this.titleInput.fill(fields.title);
+    if (fields.description !== undefined) await this.descriptionInput.fill(fields.description);
+    if (fields.priority !== undefined) await this.prioritySelect.selectOption(fields.priority);
+  }
+
+  async save(): Promise<void> {
+    await this.clickAndWaitForApi(this.saveButton, 'PATCH', '/api/tasks/');
+  }
+
+  async edit(fields: {
+    title?: string;
+    description?: string;
+    priority?: TaskPriority;
+  }): Promise<void> {
+    await this.fillForm(fields);
+    await this.save();
+  }
+
   async rename(title: string): Promise<void> {
-    await this.titleInput.fill(title);
-    await this.saveButton.click();
+    await this.edit({ title });
   }
 
   // --- estado ---
@@ -59,9 +81,13 @@ export class TaskDetailPage extends BasePage {
     return this.page.getByTestId('task-current-status');
   }
 
+  get statusSubmit(): Locator {
+    return this.page.getByTestId('task-status-submit');
+  }
+
   async changeStatus(status: TaskStatus): Promise<void> {
     await this.page.getByTestId('task-status-select').selectOption(status);
-    await this.page.getByTestId('task-status-submit').click();
+    await this.clickAndWaitForApi(this.statusSubmit, 'PATCH', '/api/tasks/');
   }
 
   // --- comment-item (la pieza repetida) ---
@@ -86,20 +112,50 @@ export class TaskDetailPage extends BasePage {
     return new CommentItemComponent(root);
   }
 
+  get commentAddButton(): Locator {
+    return this.page.getByTestId('comment-add-button');
+  }
+
   async addComment(body: string): Promise<void> {
     await this.page.getByTestId('comment-add-input').fill(body);
-    await this.page.getByTestId('comment-add-button').click();
+    await this.clickAndWaitForApi(this.commentAddButton, 'POST', '/comments');
   }
 
   // --- etiquetas e historial ---
 
   get tagChips(): Locator {
-    return this.page.getByTestId('tag-chip');
+    return this.page.getByTestId('tag-list').getByTestId(TagChipComponent.TEST_ID);
   }
 
+  async tags(): Promise<TagChipComponent[]> {
+    return toComponents(this.tagChips, (root) => new TagChipComponent(root));
+  }
+
+  tagByName(name: string): TagChipComponent {
+    const nameLocator = this.page.getByTestId('tag-chip-name').filter({ hasText: name });
+    const root = this.page.getByTestId(TagChipComponent.TEST_ID).filter({ has: nameLocator });
+    return new TagChipComponent(root);
+  }
+
+  get tagAddInput(): Locator {
+    return this.page.getByTestId('tag-add-input');
+  }
+
+  get tagAddButton(): Locator {
+    return this.page.getByTestId('tag-add-button');
+  }
+
+  /**
+   * Agrega una etiqueta y espera a que el chip aparezca. La espera no es
+   * cosmetica: el cliente limpia el input y recarga la tarea despues de que
+   * responde el POST, asi que encadenar dos altas sin esperar hace que la
+   * segunda se pise con el reset de la primera.
+   * Para los casos negativos usar tagAddInput/tagAddButton directamente.
+   */
   async addTag(name: string): Promise<void> {
-    await this.page.getByTestId('tag-add-input').fill(name);
-    await this.page.getByTestId('tag-add-button').click();
+    await this.tagAddInput.fill(name);
+    await this.tagAddButton.click();
+    await this.tagByName(name).waitFor();
   }
 
   get historyItems(): Locator {

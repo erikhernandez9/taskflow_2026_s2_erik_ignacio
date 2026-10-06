@@ -35,4 +35,18 @@ export class LoginPage extends BasePage {
     await this.passwordInput.fill(password);
     await this.submitButton.click();
   }
+
+  /** El formulario es el mismo; el toggle agrega el campo nombre. */
+  async switchToRegister(): Promise<void> {
+    await this.modeToggle.click();
+    await this.nameInput.waitFor({ state: 'visible' });
+  }
+
+  async register(email: string, password: string, name = ''): Promise<void> {
+    await this.switchToRegister();
+    if (name) await this.nameInput.fill(name);
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
+  }
 }

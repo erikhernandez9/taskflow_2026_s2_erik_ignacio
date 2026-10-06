@@ -73,7 +73,7 @@ Aplicación de los criterios:
 | `task-card` | sí | `task-card` | sí — select de estado, link al detalle | según estado | por título | **Extraer** |
 | `comment-item` | sí | `comment-item` | sí — borrar | botón solo en los propios | por cuerpo | **Extraer** |
 | `member-item` | sí | `member-item` | sí — quitar | botón solo para el owner | por email | **Extraer** |
-| `project-card` | sí | `project-card` | no — dos links | no | por nombre | Posponer |
+| `project-card` | sí | `project-card` | no — dos links | no | por nombre | Posponer → revisada, ver Actualización |
 | Pantalla entera | no | sí | sí | no | no | Queda como Page Object |
 
 ### Por qué la pieza y no la pantalla entera
@@ -88,7 +88,10 @@ arriba— donde se necesita una abstracción que se pueda instanciar N veces.
 Dicho al revés: el Page Object responde "¿qué puedo hacer en esta pantalla?",
 el Component Object responde "¿qué puedo hacer con *esta* tarjeta?".
 
-### Por qué `project-card` queda afuera por ahora
+### Por qué `project-card` quedaba afuera en el primer corte
+
+> Revisado al ampliar los casos; ver **Actualización** más abajo.
+
 
 Cumple los criterios 1, 2 y 5, pero no el 3 ni el 4: es un bloque de lectura con
 dos links, y todas sus instancias se renderizan igual. `ProjectsPage` lo resuelve
@@ -149,10 +152,48 @@ Si alguna de estas dos se discute o se revierte, merece su propio ADR.
    es más potente, pero para una app de cinco pantallas y un equipo de dos
    personas agrega vocabulario que no estamos usando todavía.
 
+
+## Actualización — ampliación de casos del frontend
+
+Al cubrir el resto de las pantallas (login/registro, proyectos, filtros del
+tablero, edición de tarea) volvimos a pasar los criterios sobre las piezas que
+habían quedado afuera. Dos cambiaron de lado:
+
+| Pieza | Qué cambió | Decisión |
+|-------|------------|----------|
+| `project-card` | Los specs navegan desde ella por **dos links distintos** (tablero y miembros), así que sí tiene comportamiento (criterio 3); y el badge "Archivado" hace que las instancias no se rendericen igual (criterio 4). Pasa los cinco. | **Extraer** |
+| `tag-chip` | Tiene acción propia (quitar) y es direccionable por nombre. Pasa 1, 2, 3 y 5. | **Extraer** |
+| `history-item` | Se repite y tiene raíz, pero es texto plano sin acciones, todas las instancias se renderizan igual y el test nunca necesita una en particular — solo cuántas hay y qué dice la última. Pasa 1 y 2. | **No extraer** |
+
+El primer corte había evaluado `project-card` como "solo lectura". Era una
+lectura incompleta: no habíamos escrito todavía los specs que navegan desde
+ella. El criterio no falló; faltaban los casos que lo activaban. `history-item`
+pasa a ser el ejemplo de que la regla puede decir que no.
+
+### Sincronización: dos trampas encontradas al escribir los casos
+
+Ninguna de las dos es del patrón, pero quedan registradas porque condicionan
+cómo se escriben los métodos de los objetos:
+
+1. **El cliente corre con `React.StrictMode`.** En desarrollo eso invoca los
+   efectos dos veces, así que `loadTask()` responde dos veces y la segunda
+   respuesta vuelve a llamar a `syncForm()`, pisando lo que el test haya
+   tipeado. Como la pantalla ya es visible desde la primera respuesta, esperar
+   al elemento raíz no alcanza: `BasePage.navigate()` espera además a que la red
+   se aquiete.
+2. **Esperar a que un botón "se vuelva a habilitar" no sirve como señal de que
+   la request terminó.** El chequeo corre antes de que React re-renderice el
+   estado deshabilitado, pasa de inmediato y deja la request en vuelo; un
+   `reload()` posterior la cancela y el cambio se pierde de forma intermitente.
+   `BasePage.clickAndWaitForApi()` espera la respuesta HTTP real.
+
+Ambas se manifestaban solo bajo carga (varios workers en paralelo), que es
+exactamente la clase de intermitencia que hace que una suite deje de ser creíble.
+
 ## Referencias
 
 - Implementación: `e2e/components/`, `e2e/pages/`, `e2e/support/`
-- Specs que ejercitan la decisión: `e2e/specs/board.spec.ts`,
-  `e2e/specs/task-detail.spec.ts`, `e2e/specs/members.spec.ts`
+- Specs que ejercitan la decisión: `e2e/specs/` (board, task-detail, members,
+  auth, projects, board-filters, task-edit)
 - Piezas en el cliente: `client/src/pages/BoardPage.tsx`,
   `client/src/pages/TaskDetailPage.tsx`, `client/src/pages/MembersPage.tsx`
