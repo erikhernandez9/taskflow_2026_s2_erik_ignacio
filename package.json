@@ -2,7 +2,7 @@
   "name": "taskflow",
   "version": "1.0.0",
   "private": true,
-  "description": "TaskFlow — gestor de tareas colaborativo. Proyecto del curso de Testing y Calidad de Software.",
+  "description": "TaskFlow \u2014 gestor de tareas colaborativo. Proyecto del curso de Testing y Calidad de Software.",
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
     "dev:server": "npm --prefix server run dev",
@@ -14,11 +14,18 @@
     "db:reset": "npm --prefix server run db:reset",
     "test": "npm --prefix server test",
     "test:coverage": "npm --prefix server run test:coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "typecheck:e2e": "tsc -p e2e/tsconfig.json",
     "lint": "npm --prefix server run lint",
     "postinstall": "npm --prefix server install && npm --prefix client install"
   },
   "devDependencies": {
-    "concurrently": "9.1.0"
+    "@playwright/test": "1.63.0",
+    "@types/node": "20.19.9",
+    "concurrently": "9.1.0",
+    "typescript": "5.6.3"
   },
   "engines": {
     "node": ">=20"

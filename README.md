@@ -80,6 +80,9 @@ El comando `db:setup` carga datos de ejemplo. Los tres usuarios comparten la con
 | `npm run db:reset` | Borra la base y la vuelve a crear desde cero |
 | `npm test` | Corre la suite de tests |
 | `npm run test:coverage` | Corre la suite con reporte de cobertura |
+| `npm run test:e2e` | Corre los tests de punta a punta con Playwright |
+| `npm run test:e2e:ui` | Abre el modo UI de Playwright |
+| `npm run typecheck:e2e` | Chequea los tipos del framework de E2E |
 
 ## Frontend
 
@@ -164,6 +167,27 @@ npm test
 
 Está lejos de ser exhaustiva — ampliarla es parte del trabajo del semestre.
 
+## Tests de punta a punta
+
+En `e2e/` hay una suite de Playwright que maneja el navegador contra la app
+corriendo de verdad. Requiere el navegador y la base una sola vez:
+
+```bash
+npx playwright install chromium
+npm run db:setup
+npm run test:e2e
+```
+
+`npm run test:e2e` levanta API y frontend por su cuenta, y los reusa si ya
+están corriendo. Si el puerto 5173 está ocupado y Vite arranca en otro, hay que
+apuntar la suite con `E2E_WEB_URL=http://localhost:5174 npm run test:e2e`.
+
+El framework usa Page Objects para las pantallas y **Component Objects** para
+las piezas que se repiten dentro de ellas (`task-card`, `comment-item`,
+`member-item`). El porqué está documentado en
+`docs/adr/0001-component-objects-para-piezas-repetidas.md`; cómo trabajar sobre
+el framework, en `e2e/README.md`.
+
 ## Estructura
 
 ```
@@ -179,6 +203,12 @@ taskflow/
 │   └── src/
 │       ├── pages/       # login, proyectos, tablero, detalle, miembros
 │       └── lib/         # cliente HTTP, sesión, helpers
+├── e2e/
+│   ├── components/      # Component Objects de las piezas repetidas
+│   ├── pages/           # Page Objects de las pantallas
+│   ├── support/         # cliente de API y fixtures
+│   └── specs/           # los tests de punta a punta
+├── docs/adr/            # decisiones de arquitectura
 └── README.md
 ```
 
