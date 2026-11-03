@@ -1,0 +1,82 @@
+# Contrato roto a propósito: name -> title en serialize() de projects.controller.ts
+# Comando: npx jest -c jest.pact.config.js provider
+
+    [17:51:13.996] INFO (46713): pact@17.1.4: Verifying provider
+
+
+    [17:51:14.010] INFO (46713): pact-core@20.2.0: Verifying Pacts.
+
+
+    [17:51:14.012] INFO (46713): pact-core@20.2.0: Verifying Pact Files
+
+
+    [17:51:14.017] INFO (46713): 0.5.8: pact native library successfully found, and the correct version
+
+          at Array.every (<anonymous>)
+
+(node:46713) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+    [17:51:14.071] WARN (46713): pact@17.1.4: no state handler found for state: ""
+
+
+
+Verifying a pact between TaskFlowWeb and TaskFlowAPI
+
+  un GET a /api/projects (2ms loading, 38ms verification)
+     Given ana tiene un proyecto
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (FAILED)
+
+  un GET a /api/projects sin token (2ms loading, 8ms verification)
+    returns a response which
+      has status code 401 (OK)
+      includes headers
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  un GET a /api/tasks/task-1/comments (2ms loading, 8ms verification)
+     Given la tarea task-1 tiene comentarios
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  un POST a /api/auth/login con credenciales válidas (2ms loading, 123ms verification)
+     Given ana está registrada
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+
+Failures:
+
+1) Verifying a pact between TaskFlowWeb and TaskFlowAPI Given ana tiene un proyecto - un GET a /api/projects
+    1.1) has a matching body
+           $[0] -> Actual map is missing the following keys: name
+
+There were 1 pact failures
+
+    [17:51:14.211] ERROR (46713): pact-core@20.2.0: Verification unsuccessful
+
+
+FAIL contract-tests/provider/verify.pact.test.ts
+  Verificación del provider: TaskFlowAPI
+    ✕ cumple el contrato con TaskFlowWeb (217 ms)
+
+  ● Verificación del provider: TaskFlowAPI › cumple el contrato con TaskFlowWeb
+
+    {"errors":[{"interaction":"Verifying a pact between TaskFlowWeb and TaskFlowAPI Given ana tiene un proyecto - un GET a /api/projects","mismatch":{"interactionId":"","mismatches":[{"actual":"[\"archived\",\"createdAt\",\"description\",\"id\",\"ownerId\",\"title\"]","expected":"[\"archived\",\"description\",\"id\",\"name\"]","mismatch":"Actual map is missing the following keys: name","path":"$[0]","type":"BodyMismatch"}],"type":"mismatches"}}],"interactionResults":[{"consumer":"TaskFlowWeb","description":"un GET a /api/projects","duration":"38ms","mismatch":{"interactionId":"","mismatches":[{"actual":"[\"archived\",\"createdAt\",\"description\",\"id\",\"ownerId\",\"title\"]","expected":"[\"archived\",\"description\",\"id\",\"name\"]","mismatch":"Actual map is missing the following keys: name","path":"$[0]","type":"BodyMismatch"}],"type":"mismatches"},"pending":false,"provider":"TaskFlowAPI","providerStates":["ana tiene un proyecto"],"result":"Error"},{"consumer":"TaskFlowWeb","description":"un GET a /api/projects sin token","duration":"8ms","pending":false,"provider":"TaskFlowAPI","providerStates":[],"result":"OK"},{"consumer":"TaskFlowWeb","description":"un GET a /api/tasks/task-1/comments","duration":"8ms","pending":false,"provider":"TaskFlowAPI","providerStates":["la tarea task-1 tiene comentarios"],"result":"OK"},{"consumer":"TaskFlowWeb","description":"un POST a /api/auth/login con credenciales válidas","duration":"123ms","pending":false,"provider":"TaskFlowAPI","providerStates":["ana está registrada"],"result":"OK"}],"notices":[],"output":["\nVerifying a pact between \u001b[1mTaskFlowWeb\u001b[0m and \u001b[1mTaskFlowAPI\u001b[0m","","  un GET a /api/projects (2ms loading, 38ms verification)","     Given ana tiene un proyecto","    returns a response which","      has status code \u001b[1m200\u001b[0m (\u001b[32mOK\u001b[0m)","      includes headers","        \"\u001b[1mContent-Type\u001b[0m\" with value \"\u001b[1mapplication/json\u001b[0m\" (\u001b[32mOK\u001b[0m)","      has a matching body (\u001b[31mFAILED\u001b[0m)","","  un GET a /api/projects sin token (2ms loading, 8ms verification)","    returns a response which","      has status code \u001b[1m401\u001b[0m (\u001b[32mOK\u001b[0m)","      includes headers","        \"\u001b[1mContent-Type\u001b[0m\" with value \"\u001b[1mapplication/json\u001b[0m\" (\u001b[32mOK\u001b[0m)","      has a matching body (\u001b[32mOK\u001b[0m)","","  un GET a /api/tasks/task-1/comments (2ms loading, 8ms verification)","     Given la tarea task-1 tiene comentarios","    returns a response which","      has status code \u001b[1m200\u001b[0m (\u001b[32mOK\u001b[0m)","      includes headers","        \"\u001b[1mContent-Type\u001b[0m\" with value \"\u001b[1mapplication/json\u001b[0m\" (\u001b[32mOK\u001b[0m)","      has a matching body (\u001b[32mOK\u001b[0m)","","  un POST a /api/auth/login con credenciales válidas (2ms loading, 123ms verification)","     Given ana está registrada","    returns a response which","      has status code \u001b[1m200\u001b[0m (\u001b[32mOK\u001b[0m)","      includes headers","        \"\u001b[1mContent-Type\u001b[0m\" with value \"\u001b[1mapplication/json\u001b[0m\" (\u001b[32mOK\u001b[0m)","      has a matching body (\u001b[32mOK\u001b[0m)","","\nFailures:\n","1) Verifying a pact between TaskFlowWeb and TaskFlowAPI Given ana tiene un proyecto - un GET a /api/projects","    1.1) has a matching body","           \u001b[1m$[0]\u001b[0m -> Actual map is missing the following keys: name","\nThere were 1 pact failures\n"],"pendingErrors":[],"result":false}
+
+      at node_modules/@pact-foundation/pact-core/src/verifier/nativeVerifier.ts:52:20
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        0.74 s, estimated 2 s
+Ran all test suites matching /provider/i.

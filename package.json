@@ -2,7 +2,7 @@
   "name": "taskflow",
   "version": "1.0.0",
   "private": true,
-  "description": "TaskFlow \u2014 gestor de tareas colaborativo. Proyecto del curso de Testing y Calidad de Software.",
+  "description": "TaskFlow — gestor de tareas colaborativo. Proyecto del curso de Testing y Calidad de Software.",
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
     "dev:server": "npm --prefix server run dev",
@@ -14,6 +14,7 @@
     "db:reset": "npm --prefix server run db:reset",
     "test": "npm --prefix server test",
     "test:coverage": "npm --prefix server run test:coverage",
+    "test:contract": "npm --prefix server run test:contract",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
