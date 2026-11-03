@@ -1,0 +1,40 @@
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+     execution: local
+        script: performance/scenarios/api-load.k6.js
+        output: -
+     scenarios: (100.00%) 1 scenario, 20 max VUs, 1m30s max duration (incl. graceful stop):
+              * default: 20 looping VUs for 1m0s (gracefulStop: 30s)
+  █ THRESHOLDS 
+    http_req_duration
+    ✓ 'p(95)<500' p(95)=314.31ms
+      {name:listado_tareas}
+      ✓ 'p(95)<500' p(95)=415.3ms
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+  █ TOTAL RESULTS 
+    checks_total.......: 3521    58.407322/s
+    checks_succeeded...: 100.00% 3521 out of 3521
+    checks_failed......: 0.00%   0 out of 3521
+    ✓ login 200
+    ✓ proyectos 200
+    ✓ tareas 200
+    ✓ detalle 200
+    ✓ comentarios 200
+    HTTP
+    http_req_duration..............: avg=88.92ms  min=401µs   med=21.62ms  max=528.91ms p(90)=262.3ms  p(95)=314.31ms
+      { expected_response:true }...: avg=88.92ms  min=401µs   med=21.62ms  max=528.91ms p(90)=262.3ms  p(95)=314.31ms
+      { name:listado_tareas }......: avg=239.82ms min=56.39ms med=235.37ms max=528.91ms p(90)=371.02ms p(95)=415.3ms 
+    http_req_failed................: 0.00%  0 out of 3522
+    http_reqs......................: 3522   58.42391/s
+    EXECUTION
+    iteration_duration.............: avg=1.36s    min=1.23s   med=1.34s    max=1.55s    p(90)=1.47s    p(95)=1.49s   
+    iterations.....................: 880    14.597683/s
+    vus............................: 20     min=20        max=20
+    vus_max........................: 20     min=20        max=20
+    NETWORK
+    data_received..................: 1.6 GB 26 MB/s
+    data_sent......................: 1.0 MB 17 kB/s
