@@ -84,6 +84,8 @@ El comando `db:setup` carga datos de ejemplo. Los tres usuarios comparten la con
 | `npm run test:e2e` | Corre los tests de punta a punta con Playwright |
 | `npm run test:e2e:ui` | Abre el modo UI de Playwright |
 | `npm run typecheck:e2e` | Chequea los tipos del framework de E2E |
+| `npm run test:a11y` | Auditoría de accesibilidad con axe-core |
+| `npm run scan:security` | Escaneo de OWASP ZAP en local |
 
 ## Frontend
 
@@ -166,7 +168,7 @@ La suite cubre autenticación, proyectos, tareas y comentarios, incluidas las hi
 npm test
 ```
 
-**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy `npm test` da 14 fallos de 81, y `npm run test:e2e`, 7 de 64.
+**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy `npm test` da 14 fallos de 81, y `npm run test:e2e`, 7 de 70 (todos bugs de vencimiento y etiquetas; la violación de accesibilidad ACC-01 ya se corrigió).
 
 ## Tests de contrato
 
@@ -189,6 +191,20 @@ k6 run -e VUS=20 -e DURATION=1m performance/scenarios/api-load.k6.js
 ```
 
 `db:seed:large` carga 200 proyectos, 5.000 tareas y 20.000 comentarios, y se vuelve a la seed chica con `npm run db:reset`. Los resultados y la hipótesis están en `performance/REPORTE.md`.
+
+## Seguridad y accesibilidad
+
+Auditoría de la Clase 12 en `security/`:
+
+```bash
+npm run test:a11y      # axe-core (WCAG 2.1 AA) sobre las vistas, con Playwright
+npm run scan:security  # OWASP ZAP contra la app EN LOCAL (requiere Docker y npm run dev)
+```
+
+Los hallazgos, con CVSS y pasos de reproducción, están en `security/REPORTE.md`,
+el reporte del práctico (Módulo 2) en `docs/clase12-m2-reporte.md`, y la US de
+remediación en `security/user-story-remediacion.md`. `npm audit` cubre las
+dependencias (SCA).
 
 ## Reportes de bugs
 

@@ -10,3 +10,5 @@ playwright-report/
 test-results/
 blob-report/
 playwright/.cache/
+# Reportes HTML de ZAP: pesados; se regeneran con npm run scan:security
+security/zap/reports/*.html

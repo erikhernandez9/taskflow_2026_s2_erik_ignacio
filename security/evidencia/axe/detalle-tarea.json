@@ -1,0 +1,18 @@
+{
+  "view": "detalle-tarea",
+  "url": "http://localhost:5173/projects/proj-688/tasks/task-5831",
+  "violations": [
+    {
+      "id": "label",
+      "impact": "critical",
+      "help": "Form elements must have labels",
+      "wcag": [
+        "wcag412"
+      ],
+      "nodes": [
+        "input[data-testid=\"tag-add-input\"]",
+        "textarea[data-testid=\"comment-add-input\"]"
+      ]
+    }
+  ]
+}

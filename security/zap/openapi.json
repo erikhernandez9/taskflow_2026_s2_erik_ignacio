@@ -1,0 +1,37 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "TaskFlow API (superficie para el escaneo de ZAP)", "version": "1.0.0" },
+  "servers": [{ "url": "http://host.docker.internal:3000" }],
+  "paths": {
+    "/api/health": { "get": { "responses": { "200": { "description": "ok" } } } },
+    "/api/auth/register": { "post": { "requestBody": { "content": { "application/json": { "example": { "email": "zap-nuevo@test.com", "password": "Password1", "name": "Zap" } } } }, "responses": { "201": { "description": "creado" } } } },
+    "/api/auth/login": { "post": { "requestBody": { "content": { "application/json": { "example": { "email": "zap@test.com", "password": "Password1" } } } }, "responses": { "200": { "description": "ok" } } } },
+    "/api/auth/forgot-password": { "post": { "requestBody": { "content": { "application/json": { "example": { "email": "zap@test.com" } } } }, "responses": { "200": { "description": "ok" } } } },
+    "/api/auth/reset-password": { "post": { "requestBody": { "content": { "application/json": { "example": { "token": "token", "newPassword": "Password1" } } } }, "responses": { "200": { "description": "ok" } } } },
+    "/api/projects": {
+      "get": { "responses": { "200": { "description": "ok" } } },
+      "post": { "requestBody": { "content": { "application/json": { "example": { "name": "Proyecto ZAP", "description": "Creado por el escaneo" } } } }, "responses": { "201": { "description": "creado" } } }
+    },
+    "/api/projects/__PROJECT__/tasks": {
+      "get": { "parameters": [
+        { "name": "search", "in": "query", "schema": { "type": "string" }, "example": "login" },
+        { "name": "status", "in": "query", "schema": { "type": "string" }, "example": "TODO" },
+        { "name": "priority", "in": "query", "schema": { "type": "string" }, "example": "HIGH" },
+        { "name": "assignedTo", "in": "query", "schema": { "type": "string" }, "example": "user-1" },
+        { "name": "limit", "in": "query", "schema": { "type": "integer" }, "example": 20 },
+        { "name": "offset", "in": "query", "schema": { "type": "integer" }, "example": 0 }
+      ], "responses": { "200": { "description": "ok" } } },
+      "post": { "requestBody": { "content": { "application/json": { "example": { "title": "Tarea ZAP", "description": "Creada por el escaneo", "priority": "LOW" } } } }, "responses": { "201": { "description": "creado" } } }
+    },
+    "/api/tasks/__TASK__": {
+      "get": { "responses": { "200": { "description": "ok" } } },
+      "patch": { "requestBody": { "content": { "application/json": { "example": { "title": "Tarea editada", "description": "Editada por el escaneo" } } } }, "responses": { "200": { "description": "ok" } } }
+    },
+    "/api/tasks/__TASK__/history": { "get": { "responses": { "200": { "description": "ok" } } } },
+    "/api/tasks/__TASK__/tags": { "post": { "requestBody": { "content": { "application/json": { "example": { "name": "zap" } } } }, "responses": { "201": { "description": "creado" } } } },
+    "/api/tasks/__TASK__/comments": {
+      "get": { "responses": { "200": { "description": "ok" } } },
+      "post": { "requestBody": { "content": { "application/json": { "example": { "body": "Comentario del escaneo" } } } }, "responses": { "201": { "description": "creado" } } }
+    }
+  }
+}

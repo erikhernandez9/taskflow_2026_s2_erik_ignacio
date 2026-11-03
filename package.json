@@ -18,11 +18,14 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
+    "test:a11y": "playwright test e2e/specs/a11y.spec.ts",
+    "scan:security": "bash security/zap/run-zap.sh",
     "typecheck:e2e": "tsc -p e2e/tsconfig.json",
     "lint": "npm --prefix server run lint",
     "postinstall": "npm --prefix server install && npm --prefix client install"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.63.0",
     "@types/node": "20.19.9",
     "concurrently": "9.1.0",
