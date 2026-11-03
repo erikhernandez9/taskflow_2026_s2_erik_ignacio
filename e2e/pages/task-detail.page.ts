@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Response } from '@playwright/test';
 import { BasePage } from './base.page';
 import { CommentItemComponent, TagChipComponent, toComponents } from '../components';
 import type { TaskPriority, TaskStatus } from '../config';
@@ -58,17 +58,53 @@ export class TaskDetailPage extends BasePage {
     if (fields.priority !== undefined) await this.prioritySelect.selectOption(fields.priority);
   }
 
-  async save(): Promise<void> {
-    await this.clickAndWaitForApi(this.saveButton, 'PATCH', '/api/tasks/');
+  async save(): Promise<Response> {
+    return this.clickAndWaitForApi(this.saveButton, 'PATCH', '/api/tasks/');
+  }
+
+  // --- asignado y vencimiento ---
+
+  get assigneeSelect(): Locator {
+    return this.page.getByTestId('task-assignee-select');
+  }
+
+  /** Elige un miembro por id; '' deja la tarea sin asignar. */
+  async assignTo(userId: string): Promise<Response> {
+    await this.assigneeSelect.selectOption(userId);
+    return this.save();
+  }
+
+  get dueDateInput(): Locator {
+    return this.page.getByTestId('task-duedate-input');
+  }
+
+  get dueDateValue(): Locator {
+    return this.page.getByTestId('task-duedate-value');
+  }
+
+  /** Carga una fecha YYYY-MM-DD; '' la quita. */
+  async setDueDate(date: string): Promise<Response> {
+    await this.dueDateInput.fill(date);
+    return this.save();
+  }
+
+  // --- borrado ---
+
+  get deleteButton(): Locator {
+    return this.page.getByTestId('task-delete-button');
+  }
+
+  async deleteTask(): Promise<Response> {
+    return this.clickAndWaitForApi(this.deleteButton, 'DELETE', '/api/tasks/');
   }
 
   async edit(fields: {
     title?: string;
     description?: string;
     priority?: TaskPriority;
-  }): Promise<void> {
+  }): Promise<Response> {
     await this.fillForm(fields);
-    await this.save();
+    return this.save();
   }
 
   async rename(title: string): Promise<void> {

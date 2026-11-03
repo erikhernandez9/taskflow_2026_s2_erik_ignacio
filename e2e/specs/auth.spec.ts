@@ -9,7 +9,7 @@ import { unique } from '../support/api-client';
  * inyecta la sesión en localStorage para no pagar el login en cada test.
  */
 test.describe('Autenticacion', () => {
-  test('registrarse desde la UI crea la cuenta y entra a proyectos', async ({
+  test('registrarse desde la UI crea la cuenta y entra a proyectos', { tag: ['@alta', '@US-01'] }, async ({
     page,
     loginPage,
     projectsPage,
@@ -24,7 +24,7 @@ test.describe('Autenticacion', () => {
     await expect(projectsPage.currentUserEmail).toHaveText(email);
   });
 
-  test('iniciar sesion con credenciales validas muestra el email en el header', async ({
+  test('iniciar sesion con credenciales validas muestra el email en el header', { tag: ['@alta', '@US-02'] }, async ({
     api,
     loginPage,
     projectsPage,
@@ -38,7 +38,7 @@ test.describe('Autenticacion', () => {
     await expect(projectsPage.currentUserEmail).toHaveText(user.email);
   });
 
-  test('contrasena incorrecta muestra el error y no navega', async ({
+  test('contrasena incorrecta muestra el error y no navega', { tag: ['@alta', '@US-02'] }, async ({
     api,
     page,
     loginPage,
@@ -53,14 +53,14 @@ test.describe('Autenticacion', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('email inexistente tambien cae en credenciales invalidas', async ({ loginPage }) => {
+  test('email inexistente tambien cae en credenciales invalidas', { tag: ['@alta', '@US-02'] }, async ({ loginPage }) => {
     await loginPage.open();
     await loginPage.login(`${unique('fantasma')}@test.com`, DEFAULT_PASSWORD);
 
     await expect(loginPage.errorMessage).toHaveText('Invalid credentials');
   });
 
-  test('registrarse con un email ya usado muestra el conflicto', async ({
+  test('registrarse con un email ya usado muestra el conflicto', { tag: ['@alta', '@US-01'] }, async ({
     api,
     loginPage,
   }) => {
@@ -73,7 +73,7 @@ test.describe('Autenticacion', () => {
     await expect(loginPage.root).toBeVisible();
   });
 
-  test('registrarse con un email invalido muestra el error de validacion', async ({
+  test('registrarse con un email invalido muestra el error de validacion', { tag: ['@alta', '@US-01'] }, async ({
     loginPage,
   }) => {
     await loginPage.open();
@@ -82,7 +82,7 @@ test.describe('Autenticacion', () => {
     await expect(loginPage.errorMessage).toHaveText('Email must be a valid address');
   });
 
-  test('entrar a una ruta protegida sin sesion redirige al login', async ({
+  test('entrar a una ruta protegida sin sesion redirige al login', { tag: ['@alta', '@US-02'] }, async ({
     page,
     loginPage,
   }) => {
@@ -92,7 +92,7 @@ test.describe('Autenticacion', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('cerrar sesion vuelve al login y limpia el token', async ({
+  test('cerrar sesion vuelve al login y limpia el token', { tag: ['@alta', '@US-02'] }, async ({
     owner,
     page,
     signIn,

@@ -7,7 +7,7 @@ import { unique } from '../support/api-client';
  * adentro de la tarjeta.
  */
 test.describe('Tablero · task-card', () => {
-  test('la tarjeta muestra los datos de la tarea', async ({ api, owner, signIn, boardPage }) => {
+  test('la tarjeta muestra los datos de la tarea', { tag: ['@alta', '@US-05'] }, async ({ api, owner, signIn, boardPage }) => {
     const project = await api.createProject(owner);
     const title = unique('Revisar contrato');
     await api.createTask(owner, project.id, { title, priority: 'HIGH' });
@@ -28,7 +28,7 @@ test.describe('Tablero · task-card', () => {
     });
   });
 
-  test('el contador de comentarios refleja los comentarios de la tarea', async ({
+  test('el contador de comentarios refleja los comentarios de la tarea', { tag: ['@alta', '@US-05'] }, async ({
     api,
     owner,
     signIn,
@@ -47,7 +47,7 @@ test.describe('Tablero · task-card', () => {
     expect(await boardPage.cardByTitle(title).comments()).toBe(2);
   });
 
-  test('mover la tarjeta a IN_PROGRESS la cambia de columna', async ({
+  test('mover la tarjeta a IN_PROGRESS la cambia de columna', { tag: ['@alta', '@US-06'] }, async ({
     api,
     owner,
     signIn,
@@ -71,7 +71,7 @@ test.describe('Tablero · task-card', () => {
     expect(await boardPage.cardByTitle(title).status()).toBe('IN_PROGRESS');
   });
 
-  test('filtrar por prioridad deja solo las tarjetas que corresponden', async ({
+  test('filtrar por prioridad deja solo las tarjetas que corresponden', { tag: ['@media', '@US-07'] }, async ({
     api,
     owner,
     signIn,
@@ -95,7 +95,7 @@ test.describe('Tablero · task-card', () => {
     await expect(card.priority).toHaveText('CRITICAL');
   });
 
-  test('cada tarjeta expone su propio estado sin pisarse con las demas', async ({
+  test('cada tarjeta expone su propio estado sin pisarse con las demas', { tag: ['@alta', '@US-05'] }, async ({
     api,
     owner,
     signIn,

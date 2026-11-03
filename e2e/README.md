@@ -60,6 +60,9 @@ e2e/
     ├── board-filters.spec.ts  # alta, filtros, búsqueda, contadores
     ├── task-detail.spec.ts # comment-item
     ├── task-edit.spec.ts   # edición, estado, etiquetas, historial
+    ├── task-assign.spec.ts # US-14: asignar, reasignar, desasignar
+    ├── task-due-date.spec.ts  # US-16: vencimiento y zona horaria
+    ├── task-delete.spec.ts # US-13: borrar tarea
     └── members.spec.ts     # member-item
 ```
 
@@ -82,6 +85,24 @@ depende del seed.
 **Login por `localStorage`.** El fixture `signIn` siembra el token antes de la
 primera navegación (ver `client/src/lib/api.ts`). El login por pantalla se
 prueba en su propio spec, no como peaje de entrada de los demás.
+
+## Prioridad y cobertura
+
+Cada test lleva como etiqueta la prioridad y la historia de la especificación, así
+que se puede correr por criticidad o por historia:
+
+```bash
+npx playwright test --grep @alta
+npx playwright test --grep @US-14
+```
+
+US-09, US-10 y US-17 no tienen pantalla en el cliente: se cubren en
+`server/tests/`, no acá.
+
+**Un test en rojo puede ser un bug, no un test roto.** Si falla por un
+comportamiento incorrecto de la app, no se ajusta para que pase: se reporta en
+`docs/issues/`. Hoy fallan 7: los de vencimiento (`docs/issues/04`) y los de
+etiquetas (`docs/issues/10` y `11`).
 
 ## Sincronización
 

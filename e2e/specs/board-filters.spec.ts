@@ -3,7 +3,7 @@ import { unique } from '../support/api-client';
 
 /** Casos del tablero que no son de la tarjeta: alta, filtros y contadores. */
 test.describe('Tablero · alta, filtros y contadores', () => {
-  test('crear una tarea desde el formulario la agrega a TODO', async ({
+  test('crear una tarea desde el formulario la agrega a TODO', { tag: ['@alta', '@US-05'] }, async ({
     api,
     owner,
     signIn,
@@ -22,7 +22,7 @@ test.describe('Tablero · alta, filtros y contadores', () => {
     expect(await boardPage.cardByTitle(titulo).status()).toBe('TODO');
   });
 
-  test('un titulo de menos de 3 caracteres muestra el error de validacion', async ({
+  test('un titulo de menos de 3 caracteres muestra el error de validacion', { tag: ['@alta', '@US-05'] }, async ({
     api,
     owner,
     signIn,
@@ -40,7 +40,7 @@ test.describe('Tablero · alta, filtros y contadores', () => {
     await expect(boardPage.cards()).toHaveCount(0);
   });
 
-  test('buscar por texto deja solo las tareas que coinciden', async ({
+  test('buscar por texto deja solo las tareas que coinciden', { tag: ['@media', '@US-07'] }, async ({
     api,
     owner,
     signIn,
@@ -61,7 +61,7 @@ test.describe('Tablero · alta, filtros y contadores', () => {
     expect(await boardPage.cardByTitle(aguja).title()).toBe(aguja);
   });
 
-  test('limpiar los filtros vuelve a mostrar todas las tareas', async ({
+  test('limpiar los filtros vuelve a mostrar todas las tareas', { tag: ['@media', '@US-07'] }, async ({
     api,
     owner,
     signIn,
@@ -81,7 +81,7 @@ test.describe('Tablero · alta, filtros y contadores', () => {
     await expect(boardPage.cards()).toHaveCount(2);
   });
 
-  test('un filtro sin resultados deja el tablero vacio y el total en cero', async ({
+  test('un filtro sin resultados deja el tablero vacio y el total en cero', { tag: ['@media', '@US-07'] }, async ({
     api,
     owner,
     signIn,
@@ -98,7 +98,7 @@ test.describe('Tablero · alta, filtros y contadores', () => {
     await expect(boardPage.total).toHaveText('Total: 0');
   });
 
-  test('los contadores por columna y el total siguen al estado real', async ({
+  test('los contadores por columna y el total siguen al estado real', { tag: ['@alta', '@US-06'] }, async ({
     api,
     owner,
     signIn,
@@ -122,7 +122,7 @@ test.describe('Tablero · alta, filtros y contadores', () => {
     await expect(boardPage.total).toHaveText('Total: 2');
   });
 
-  test('el link de miembros lleva a la pantalla de miembros', async ({
+  test('el link de miembros lleva a la pantalla de miembros', { tag: ['@alta', '@US-11'] }, async ({
     api,
     owner,
     signIn,

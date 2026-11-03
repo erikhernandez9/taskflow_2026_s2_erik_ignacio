@@ -124,6 +124,15 @@ export class ApiClient {
     );
   }
 
+  async removeMember(session: Session, projectId: string, userId: string): Promise<void> {
+    await ok(
+      await this.request.delete(this.url(`/projects/${projectId}/members/${userId}`), {
+        headers: this.authFor(session),
+      }),
+      'removeMember',
+    );
+  }
+
   async addComment(session: Session, taskId: string, body: string): Promise<string> {
     const res = await ok(
       await this.request.post(this.url(`/tasks/${taskId}/comments`), {

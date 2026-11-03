@@ -190,10 +190,27 @@ cómo se escriben los métodos de los objetos:
 Ambas se manifestaban solo bajo carga (varios workers en paralelo), que es
 exactamente la clase de intermitencia que hace que una suite deje de ser creíble.
 
+## Actualización — cobertura por prioridad (Clase 8)
+
+Al aplicar el framework a todas las historias de la especificación, de mayor a
+menor prioridad, tomamos tres decisiones. La arquitectura de Component Objects no
+cambió.
+
+| Decisión | Por qué |
+|----------|---------|
+| Cada test lleva etiquetas de prioridad e historia (`@alta`, `@US-14`) | Permite correr primero lo más crítico y ver qué cubre cada historia |
+| US-09, US-10 y US-17 se prueban en integración, no en E2E | No tienen pantalla en el cliente. Además, lo que se puede probar abajo, se prueba abajo |
+| `clickAndWaitForApi()` devuelve la respuesta | Permite afirmar el código HTTP antes de mirar la pantalla y evita falsos verdes |
+
+Asignado y vencimiento quedan en `TaskDetailPage` y no como Component Objects:
+existen una sola vez en la pantalla y cumplen solo dos de los cinco criterios
+(raíz estable y comportamiento).
+
 ## Referencias
 
 - Implementación: `e2e/components/`, `e2e/pages/`, `e2e/support/`
 - Specs que ejercitan la decisión: `e2e/specs/` (board, task-detail, members,
-  auth, projects, board-filters, task-edit)
+  auth, projects, board-filters, task-edit, task-assign, task-due-date,
+  task-delete)
 - Piezas en el cliente: `client/src/pages/BoardPage.tsx`,
   `client/src/pages/TaskDetailPage.tsx`, `client/src/pages/MembersPage.tsx`

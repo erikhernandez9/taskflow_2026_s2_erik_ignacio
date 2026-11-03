@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page, Response } from '@playwright/test';
 
 /**
  * Base de todo Page Object.
@@ -26,12 +26,12 @@ export abstract class BasePage {
     button: Locator,
     method: string,
     pathFragment: string,
-  ): Promise<void> {
+  ): Promise<Response> {
     const response = this.page.waitForResponse(
       (r) => r.request().method() === method && r.url().includes(pathFragment),
     );
     await button.click();
-    await response;
+    return response;
   }
 
   protected async navigate(path: string): Promise<void> {

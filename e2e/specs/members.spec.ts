@@ -7,7 +7,7 @@ import { expect, test } from '../support/fixtures';
  * el botón de quitar aparece solo para el owner, y nunca sobre su propia fila.
  */
 test.describe('Miembros · member-item', () => {
-  test('el owner aparece en la lista y no se puede quitar a si mismo', async ({
+  test('el owner aparece en la lista y no se puede quitar a si mismo', { tag: ['@alta', '@US-11'] }, async ({
     api,
     owner,
     signIn,
@@ -24,7 +24,7 @@ test.describe('Miembros · member-item', () => {
     expect(await fila.canRemove()).toBe(false);
   });
 
-  test('el owner agrega un miembro y la fila aparece con su email y rol', async ({
+  test('el owner agrega un miembro y la fila aparece con su email y rol', { tag: ['@alta', '@US-11'] }, async ({
     api,
     owner,
     signIn,
@@ -47,7 +47,7 @@ test.describe('Miembros · member-item', () => {
     await expect(membersPage.memberItems).toHaveCount(2);
   });
 
-  test('quitar un miembro saca la fila de la lista', async ({
+  test('quitar un miembro saca la fila de la lista', { tag: ['@alta', '@US-11'] }, async ({
     api,
     owner,
     signIn,
@@ -66,7 +66,7 @@ test.describe('Miembros · member-item', () => {
     await expect(membersPage.memberItems).toHaveCount(1);
   });
 
-  test('un miembro que no es owner ve la lista en solo lectura', async ({
+  test('un miembro que no es owner ve la lista en solo lectura', { tag: ['@alta', '@US-11'] }, async ({
     api,
     owner,
     signIn,

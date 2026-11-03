@@ -9,7 +9,7 @@ import { unique } from '../support/api-client';
  * intercambiables y el test necesita preguntarle a cada una por separado.
  */
 test.describe('Detalle de tarea · comment-item', () => {
-  test('cada comentario muestra su cuerpo y su autor', async ({
+  test('cada comentario muestra su cuerpo y su autor', { tag: ['@media', '@US-08'] }, async ({
     api,
     owner,
     signIn,
@@ -35,7 +35,7 @@ test.describe('Detalle de tarea · comment-item', () => {
     await expect(comment.date).not.toBeEmpty();
   });
 
-  test('solo los comentarios propios ofrecen borrar', async ({
+  test('solo los comentarios propios ofrecen borrar', { tag: ['@media', '@US-08'] }, async ({
     api,
     owner,
     signIn,
@@ -59,7 +59,7 @@ test.describe('Detalle de tarea · comment-item', () => {
     expect(await taskDetailPage.commentByBody(ajeno).canDelete()).toBe(false);
   });
 
-  test('borrar un comentario propio lo saca de la lista', async ({
+  test('borrar un comentario propio lo saca de la lista', { tag: ['@media', '@US-08'] }, async ({
     api,
     owner,
     signIn,
@@ -83,7 +83,7 @@ test.describe('Detalle de tarea · comment-item', () => {
     expect(await restante.text()).toBe(queQueda);
   });
 
-  test('comentar desde la UI agrega la pieza a la lista', async ({
+  test('comentar desde la UI agrega la pieza a la lista', { tag: ['@media', '@US-08'] }, async ({
     api,
     owner,
     signIn,

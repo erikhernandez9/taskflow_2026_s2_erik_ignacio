@@ -3,7 +3,7 @@ import { unique } from '../support/api-client';
 
 /** Casos de la lista de proyectos: alta, validaciones, vacío y navegación. */
 test.describe('Proyectos · project-card', () => {
-  test('un usuario nuevo ve el estado vacio', async ({ owner, signIn, projectsPage }) => {
+  test('un usuario nuevo ve el estado vacio', { tag: ['@alta', '@US-04'] }, async ({ owner, signIn, projectsPage }) => {
     await signIn(owner);
     await projectsPage.open();
 
@@ -11,7 +11,7 @@ test.describe('Proyectos · project-card', () => {
     await expect(projectsPage.emptyState).toBeVisible();
   });
 
-  test('crear un proyecto lo agrega a la lista con su descripcion', async ({
+  test('crear un proyecto lo agrega a la lista con su descripcion', { tag: ['@alta', '@US-03'] }, async ({
     owner,
     signIn,
     projectsPage,
@@ -31,7 +31,7 @@ test.describe('Proyectos · project-card', () => {
     });
   });
 
-  test('un proyecto sin descripcion muestra el texto por defecto', async ({
+  test('un proyecto sin descripcion muestra el texto por defecto', { tag: ['@alta', '@US-03'] }, async ({
     owner,
     signIn,
     projectsPage,
@@ -45,7 +45,7 @@ test.describe('Proyectos · project-card', () => {
     await expect(projectsPage.cardByName(nombre).description).toHaveText('Sin descripción');
   });
 
-  test('repetir el nombre de un proyecto propio muestra el conflicto', async ({
+  test('repetir el nombre de un proyecto propio muestra el conflicto', { tag: ['@alta', '@US-03'] }, async ({
     api,
     owner,
     signIn,
@@ -66,7 +66,7 @@ test.describe('Proyectos · project-card', () => {
     await expect(projectsPage.cards).toHaveCount(1);
   });
 
-  test('un nombre de mas de 100 caracteres muestra el error de validacion', async ({
+  test('un nombre de mas de 100 caracteres muestra el error de validacion', { tag: ['@alta', '@US-03'] }, async ({
     owner,
     signIn,
     projectsPage,
@@ -82,7 +82,7 @@ test.describe('Proyectos · project-card', () => {
     await expect(projectsPage.cards).toHaveCount(0);
   });
 
-  test('la tarjeta navega al tablero del proyecto', async ({
+  test('la tarjeta navega al tablero del proyecto', { tag: ['@alta', '@US-04'] }, async ({
     api,
     owner,
     signIn,
@@ -100,7 +100,7 @@ test.describe('Proyectos · project-card', () => {
     await expect(boardPage.projectName).toHaveText(nombre);
   });
 
-  test('la tarjeta navega a la pantalla de miembros', async ({
+  test('la tarjeta navega a la pantalla de miembros', { tag: ['@alta', '@US-04'] }, async ({
     api,
     owner,
     signIn,
@@ -118,7 +118,7 @@ test.describe('Proyectos · project-card', () => {
     await expect(membersPage.memberItems).toHaveCount(1);
   });
 
-  test('la lista muestra solo los proyectos del usuario', async ({
+  test('la lista muestra solo los proyectos del usuario', { tag: ['@alta', '@US-04'] }, async ({
     api,
     owner,
     signIn,
