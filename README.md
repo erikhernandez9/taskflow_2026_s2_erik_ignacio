@@ -80,6 +80,7 @@ El comando `db:setup` carga datos de ejemplo. Los tres usuarios comparten la con
 | `npm run db:reset` | Borra la base y la vuelve a crear desde cero |
 | `npm test` | Corre la suite de tests |
 | `npm run test:coverage` | Corre la suite con reporte de cobertura |
+| `npm run test:contract` | Genera y verifica el contrato con Pact |
 | `npm run test:e2e` | Corre los tests de punta a punta con Playwright |
 | `npm run test:e2e:ui` | Abre el modo UI de Playwright |
 | `npm run typecheck:e2e` | Chequea los tipos del framework de E2E |
@@ -159,13 +160,39 @@ Códigos: `VALIDATION_ERROR` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NO
 
 ## Estado de los tests
 
-El proyecto viene con una suite de tests que cubre los flujos principales de autenticación, proyectos, tareas y comentarios. Corre en verde:
+La suite cubre autenticación, proyectos, tareas y comentarios, incluidas las historias sin pantalla (US-09, US-10 y US-17):
 
 ```bash
 npm test
 ```
 
-Está lejos de ser exhaustiva — ampliarla es parte del trabajo del semestre.
+**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy `npm test` da 14 fallos de 81, y `npm run test:e2e`, 7 de 64.
+
+## Tests de contrato
+
+Pact verifica el contrato entre el frontend y la API. No hace falta levantar nada:
+
+```bash
+npm run test:contract
+```
+
+El detalle está en `server/contract-tests/README.md`.
+
+## Tests de performance
+
+Requiere [k6](https://grafana.com/docs/k6/). Con la API levantada (`npm run dev`):
+
+```bash
+k6 run -e VUS=1 -e DURATION=30s performance/scenarios/api-load.k6.js
+npm --prefix server run db:seed:large
+k6 run -e VUS=20 -e DURATION=1m performance/scenarios/api-load.k6.js
+```
+
+`db:seed:large` carga 200 proyectos, 5.000 tareas y 20.000 comentarios, y se vuelve a la seed chica con `npm run db:reset`. Los resultados y la hipótesis están en `performance/REPORTE.md`.
+
+## Reportes de bugs
+
+Cada bug tiene su reporte en `docs/issues/`. `docs/issues/crear-issues.sh` los carga como GitHub Issues; requiere `gh auth login`.
 
 ## Tests de punta a punta
 
@@ -186,8 +213,9 @@ El framework usa Page Objects para las pantallas y **Component Objects** para
 las piezas que se repiten dentro de ellas (`task-card`, `comment-item`,
 `member-item`, `project-card` y `tag-chip`). Los specs cubren autenticación y
 guard de rutas, alta y validaciones de proyectos, alta/filtros/contadores del
-tablero, edición de tarea con estados, etiquetas e historial, comentarios y
-miembros. El porqué de la arquitectura está documentado en
+tablero, edición, asignación, vencimiento y borrado de tareas, estados, etiquetas
+e historial, comentarios y miembros. Cada test lleva su prioridad y su historia
+como etiqueta: `npx playwright test --grep @alta`. El porqué de la arquitectura está documentado en
 `docs/adr/0001-component-objects-para-piezas-repetidas.md`; cómo trabajar sobre
 el framework, en `e2e/README.md`.
 
