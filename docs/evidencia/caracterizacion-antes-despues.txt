@@ -1,0 +1,160 @@
+Evidencia: tests de caracterizacion (server/tests/characterization.test.ts)
+Comando: cd server && npx jest --runInBand tests/characterization.test.ts --coverage=false
+El mismo archivo se copio sin cambios a un worktree de cada commit (el test es autocontenido).
+Corrido el 2026-11-24. Se muestran las lineas de resumen y el nombre de cada test.
+
+==============================================================================
+ANTES: f0d3453 (commit previo al refactor)
+==============================================================================
+  Caracterización (a) · PATCH de tarea con varios campos a la vez
+    ✓ actualiza título, prioridad, estado, assignee y dueDate en una sola llamada
+    ✓ un PATCH sin cambio de estado no escribe historial
+    ✓ un body vacío devuelve la tarea sin cambios
+    ✓ assigneeId null desasigna la tarea
+    ✓ rechaza un assignee que no es miembro del proyecto (400) y no aplica el resto de los campos
+    ✓ rechaza valores inválidos de prioridad y título con 400
+    ✓ un miembro común que no es assignee no puede cambiar el estado (403)
+    ✓ el assignee puede cambiar el estado y una transición DONE -> TODO se rechaza (422)
+  Caracterización (b) · validación de email en register y en agregar miembro
+    ✓ register acepta el email válido car-b-valido@test.com
+    ✓ register acepta el email válido Car.B.Mayus@Test.COM
+    ✓ register rechaza el email inválido "sin-arroba.com" con 400
+    ✓ register rechaza el email inválido "dos@@test.com" con 400
+    ✓ register rechaza el email inválido "espacio en@test.com" con 400
+    ✓ register rechaza el email inválido "sin-punto@test" con 400
+    ✓ register rechaza el email inválido "" con 400
+    ✓ register rechaza un email que no es string con 400
+    ✓ agregar miembro acepta un email válido de un usuario existente (201)
+    ✓ agregar miembro rechaza el email inválido "sin-arroba.com" con 400
+    ✓ agregar miembro rechaza el email inválido "dos@@test.com" con 400
+    ✓ agregar miembro rechaza el email inválido "sin-punto@test" con 400
+    ✓ agregar miembro rechaza el email inválido "" con 400
+    ✓ agregar miembro con email válido pero inexistente da 404, y repetido da 409
+  Caracterización (c) · listado de tareas con assignee y commentCount
+    ✓ cada tarea trae su assignee y su commentCount correctos
+    ✓ un proyecto sin tareas devuelve lista vacía
+    ✓ el filtro assignedTo devuelve solo las tareas de ese usuario
+  Caracterización (d) · combinación de filtros y búsqueda de texto
+    ✓ status solo filtra por estado
+    ✓ priority sola filtra por prioridad
+    ✓ search solo busca por texto
+    ✓ un search sin coincidencias devuelve lista vacía
+  Caracterización (e) · autorización de proyecto: owner, miembro no-owner, no-miembro
+    ✓ GET (listado de proyectos y de tareas): owner y miembro ven el proyecto, el no-miembro no
+    ✓ PATCH: owner 200, miembro 403, no-miembro 404, inexistente 404
+    ✓ PATCH con id malformado devuelve 404
+    ✓ DELETE: miembro 403, no-miembro 404, owner 204 y luego 404
+    ✓ agregar miembro: solo el owner (miembro 403, no-miembro 403, proyecto inexistente 404)
+  Cambios de comportamiento detectados por la caracterización (fallan en f0d3453)
+    ✕ register acepta emails con "+" y TLD de 1 letra (la regex vieja de auth era más estricta)
+    ✕ agregar miembro con email inválido responde "Email must be a valid address" (antes: "email ..." en minúscula)
+    ✕ search no distingue mayúsculas de minúsculas y también mira la descripción
+    ✕ status + priority devuelven la intersección
+    ✕ status + priority + search juntos devuelven la intersección
+    ✕ un search con ' OR '1'='1 se trata como texto literal (antes: SQL injection)
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 34 passed, 40 total
+
+==============================================================================
+REFACTOR: b5233a5
+==============================================================================
+  Caracterización (a) · PATCH de tarea con varios campos a la vez
+    ✓ actualiza título, prioridad, estado, assignee y dueDate en una sola llamada
+    ✓ un PATCH sin cambio de estado no escribe historial
+    ✓ un body vacío devuelve la tarea sin cambios
+    ✓ assigneeId null desasigna la tarea
+    ✓ rechaza un assignee que no es miembro del proyecto (400) y no aplica el resto de los campos
+    ✓ rechaza valores inválidos de prioridad y título con 400
+    ✓ un miembro común que no es assignee no puede cambiar el estado (403)
+    ✓ el assignee puede cambiar el estado y una transición DONE -> TODO se rechaza (422)
+  Caracterización (b) · validación de email en register y en agregar miembro
+    ✓ register acepta el email válido car-b-valido@test.com
+    ✓ register acepta el email válido Car.B.Mayus@Test.COM
+    ✓ register rechaza el email inválido "sin-arroba.com" con 400
+    ✓ register rechaza el email inválido "dos@@test.com" con 400
+    ✓ register rechaza el email inválido "espacio en@test.com" con 400
+    ✓ register rechaza el email inválido "sin-punto@test" con 400
+    ✓ register rechaza el email inválido "" con 400
+    ✓ register rechaza un email que no es string con 400
+    ✓ agregar miembro acepta un email válido de un usuario existente (201)
+    ✓ agregar miembro rechaza el email inválido "sin-arroba.com" con 400
+    ✓ agregar miembro rechaza el email inválido "dos@@test.com" con 400
+    ✓ agregar miembro rechaza el email inválido "sin-punto@test" con 400
+    ✓ agregar miembro rechaza el email inválido "" con 400
+    ✓ agregar miembro con email válido pero inexistente da 404, y repetido da 409
+  Caracterización (c) · listado de tareas con assignee y commentCount
+    ✓ cada tarea trae su assignee y su commentCount correctos
+    ✓ un proyecto sin tareas devuelve lista vacía
+    ✓ el filtro assignedTo devuelve solo las tareas de ese usuario
+  Caracterización (d) · combinación de filtros y búsqueda de texto
+    ✓ status solo filtra por estado
+    ✓ priority sola filtra por prioridad
+    ✓ search solo busca por texto
+    ✓ un search sin coincidencias devuelve lista vacía
+  Caracterización (e) · autorización de proyecto: owner, miembro no-owner, no-miembro
+    ✓ GET (listado de proyectos y de tareas): owner y miembro ven el proyecto, el no-miembro no
+    ✓ PATCH: owner 200, miembro 403, no-miembro 404, inexistente 404
+    ✓ PATCH con id malformado devuelve 404
+    ✓ DELETE: miembro 403, no-miembro 404, owner 204 y luego 404
+    ✓ agregar miembro: solo el owner (miembro 403, no-miembro 403, proyecto inexistente 404)
+  Cambios de comportamiento detectados por la caracterización (fallan en f0d3453)
+    ✓ register acepta emails con "+" y TLD de 1 letra (la regex vieja de auth era más estricta)
+    ✓ agregar miembro con email inválido responde "Email must be a valid address" (antes: "email ..." en minúscula)
+    ✓ search no distingue mayúsculas de minúsculas y también mira la descripción
+    ✓ status + priority devuelven la intersección
+    ✓ status + priority + search juntos devuelven la intersección
+    ✓ un search con ' OR '1'='1 se trata como texto literal (antes: SQL injection)
+Test Suites: 1 passed, 1 total
+Tests:       40 passed, 40 total
+
+==============================================================================
+HEAD: 5eda041 (worktree actual)
+==============================================================================
+  Caracterización (a) · PATCH de tarea con varios campos a la vez
+    ✓ actualiza título, prioridad, estado, assignee y dueDate en una sola llamada
+    ✓ un PATCH sin cambio de estado no escribe historial
+    ✓ un body vacío devuelve la tarea sin cambios
+    ✓ assigneeId null desasigna la tarea
+    ✓ rechaza un assignee que no es miembro del proyecto (400) y no aplica el resto de los campos
+    ✓ rechaza valores inválidos de prioridad y título con 400
+    ✓ un miembro común que no es assignee no puede cambiar el estado (403)
+    ✓ el assignee puede cambiar el estado y una transición DONE -> TODO se rechaza (422)
+  Caracterización (b) · validación de email en register y en agregar miembro
+    ✓ register acepta el email válido car-b-valido@test.com
+    ✓ register acepta el email válido Car.B.Mayus@Test.COM
+    ✓ register rechaza el email inválido "sin-arroba.com" con 400
+    ✓ register rechaza el email inválido "dos@@test.com" con 400
+    ✓ register rechaza el email inválido "espacio en@test.com" con 400
+    ✓ register rechaza el email inválido "sin-punto@test" con 400
+    ✓ register rechaza el email inválido "" con 400
+    ✓ register rechaza un email que no es string con 400
+    ✓ agregar miembro acepta un email válido de un usuario existente (201)
+    ✓ agregar miembro rechaza el email inválido "sin-arroba.com" con 400
+    ✓ agregar miembro rechaza el email inválido "dos@@test.com" con 400
+    ✓ agregar miembro rechaza el email inválido "sin-punto@test" con 400
+    ✓ agregar miembro rechaza el email inválido "" con 400
+    ✓ agregar miembro con email válido pero inexistente da 404, y repetido da 409
+  Caracterización (c) · listado de tareas con assignee y commentCount
+    ✓ cada tarea trae su assignee y su commentCount correctos
+    ✓ un proyecto sin tareas devuelve lista vacía
+    ✓ el filtro assignedTo devuelve solo las tareas de ese usuario
+  Caracterización (d) · combinación de filtros y búsqueda de texto
+    ✓ status solo filtra por estado
+    ✓ priority sola filtra por prioridad
+    ✓ search solo busca por texto
+    ✓ un search sin coincidencias devuelve lista vacía
+  Caracterización (e) · autorización de proyecto: owner, miembro no-owner, no-miembro
+    ✓ GET (listado de proyectos y de tareas): owner y miembro ven el proyecto, el no-miembro no
+    ✓ PATCH: owner 200, miembro 403, no-miembro 404, inexistente 404
+    ✓ PATCH con id malformado devuelve 404
+    ✓ DELETE: miembro 403, no-miembro 404, owner 204 y luego 404
+    ✓ agregar miembro: solo el owner (miembro 403, no-miembro 403, proyecto inexistente 404)
+  Cambios de comportamiento detectados por la caracterización (fallan en f0d3453)
+    ✓ register acepta emails con "+" y TLD de 1 letra (la regex vieja de auth era más estricta)
+    ✓ agregar miembro con email inválido responde "Email must be a valid address" (antes: "email ..." en minúscula)
+    ✓ search no distingue mayúsculas de minúsculas y también mira la descripción
+    ✓ status + priority devuelven la intersección
+    ✓ status + priority + search juntos devuelven la intersección
+    ✓ un search con ' OR '1'='1 se trata como texto literal (antes: SQL injection)
+Test Suites: 1 passed, 1 total
+Tests:       40 passed, 40 total
