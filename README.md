@@ -168,7 +168,7 @@ La suite cubre autenticación, proyectos, tareas y comentarios, incluidas las hi
 npm test
 ```
 
-**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy `npm test` da 14 fallos de 81, y `npm run test:e2e`, 7 de 70 (todos bugs de vencimiento y etiquetas; la violación de accesibilidad ACC-01 ya se corrigió).
+**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy, con la zona horaria de Uruguay (la del pipeline), `npm test` da 66 fallos de 196 y `npm run test:e2e`, 7 de 70 (todos bugs de vencimiento y etiquetas; la violación de accesibilidad ACC-01 ya se corrigió). Con `TZ=UTC` los fallos de `npm test` bajan a 24, porque el bug #4 solo aparece detrás de UTC.
 
 ## Tests de contrato
 
