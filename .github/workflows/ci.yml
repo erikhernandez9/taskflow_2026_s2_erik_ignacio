@@ -1,0 +1,171 @@
+name: CI de calidad (informativo)
+
+# Este pipeline INFORMA, no bloquea: no hay branch protection, así que un PR
+# con checks en rojo igual se puede mergear. Cada job es independiente (no hay
+# `needs`) para que una etapa en rojo no oculte el resultado de las demás.
+# En un equipo real, estos mismos checks se marcan como obligatorios para mergear.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 22
+  # El runner corre en UTC y ahí el bug de la fecha corrida (issue #4) no se ve.
+  # Fijamos la zona de nuestras máquinas en todos los jobs para que el resultado
+  # no dependa de dónde corre el pipeline.
+  TZ: America/Montevideo
+
+jobs:
+  build-server:
+    name: Build del servidor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Generar el cliente de Prisma
+        run: npx prisma generate
+        working-directory: server
+      - name: Compilar el servidor
+        run: npm run build
+
+  lint:
+    name: Lint (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Analizar el código con ESLint
+        run: npm run lint
+
+  tests:
+    name: Tests (unit e integración)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Generar el cliente de Prisma
+        run: npx prisma generate
+        working-directory: server
+      - name: Correr los tests
+        run: npm test
+
+  coverage:
+    # Gate del Proyecto Integrador: 80 % de líneas (la clase arrancó con 70).
+    name: Cobertura con umbral (líneas 80 / ramas 40)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Generar el cliente de Prisma
+        run: npx prisma generate
+        working-directory: server
+      - name: Medir cobertura y exigir el umbral
+        run: npx jest --runInBand --coverage --coverageThreshold='{"global":{"lines":80,"branches":40}}'
+        working-directory: server
+      - name: Guardar el reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: server/coverage/
+          retention-days: 14
+
+  build-client:
+    name: Build del cliente
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Compilar el cliente
+        run: npm run build:client
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    env:
+      # Base SQLite propia del job (relativa a server/prisma) y un secreto de prueba.
+      DATABASE_URL: file:./e2e.db
+      JWT_SECRET: ci-e2e-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Crear la base y cargar el seed
+        run: npm run db:setup
+      # Playwright levanta la API y el frontend (webServer en playwright.config.ts)
+      # y espera a que los dos respondan antes de correr los tests.
+      - name: Correr los tests E2E
+        run: npm run test:e2e
+      - name: Guardar el reporte de Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+      - name: Guardar traces, capturas y videos de los fallos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 14

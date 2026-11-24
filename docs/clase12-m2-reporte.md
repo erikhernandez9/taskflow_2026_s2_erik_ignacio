@@ -49,7 +49,7 @@ producción, así que su riesgo real es menor aunque npm los marque high.
 |-------|-----------|
 | **ID** | SEC-01 |
 | **Título** | IDOR: un usuario edita o borra tareas de un proyecto donde no es miembro |
-| **Severidad** | **HIGH** · CVSS (opcional): 8.1 (`AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:H`, estimado) |
+| **Severidad** | **HIGH** · CVSS (opcional): 8.3 (`AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:H`) |
 | **Descripción** | `PATCH /api/tasks/:id` y `DELETE /api/tasks/:id` no verifican membresía en el proyecto. `GET` sí devuelve 403; los de escritura no. |
 | **Pasos** | 1. Login como A; crear proyecto y tarea. 2. Login como B (no miembro). 3. `PATCH /api/tasks/{id de A}` con `{"status":"IN_PROGRESS"}` → **200**. 4. `DELETE /api/tasks/{id de A}` → **204**. |
 | **Impacto** | Cualquier cuenta autenticada modifica o borra datos de cualquier proyecto. Ruptura de control de acceso (OWASP A01). |
@@ -59,19 +59,20 @@ producción, así que su riesgo real es menor aunque npm los marque high.
 
 | Campo | Contenido |
 |-------|-----------|
-| **ID** | SEC-02 |
+| **ID** | SEC-05 (mismo ID que en `security/REPORTE.md`) |
 | **Título** | Faltan headers de seguridad y `X-Powered-By` / CORS exponen de más |
-| **Severidad** | **MEDIUM** · CVSS (opcional): 5.3 (estimado) |
+| **Severidad** | **MEDIUM** · CVSS (opcional): 4.3 (`AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N`) |
 | **Descripción** | La API no envía `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options` ni `X-Content-Type-Options`; expone `X-Powered-By: Express` y responde `Access-Control-Allow-Origin: *`. |
 | **Pasos** | 1. `curl -I http://localhost:3000/api/health`. 2. `curl -I http://localhost:3000/api/projects -H "Authorization: Bearer $TOKEN"`. 3. Ver la tabla de headers de arriba. |
 | **Impacto** | Facilita clickjacking, XSS y reconocimiento del stack. Security misconfiguration (OWASP A05). |
 | **Remediación** | Middleware `helmet` en Express, `app.disable('x-powered-by')` y CORS restringido al origen del frontend. |
 
-Otros hallazgos verificados (detalle en `security/REPORTE.md`): toma de cuenta vía
-`forgot-password` que devuelve el token en la respuesta (HIGH), secreto del JWT con
-default en el código (crítico si se despliega sin `JWT_SECRET`), mass assignment al
-crear tarea (`status`/`createdAt` arbitrarios), y enumeración de cuentas en
-`forgot-password` (404 vs 200).
+Otros hallazgos verificados (detalle en `security/REPORTE.md`, con los mismos IDs):
+SEC-02, toma de cuenta vía `forgot-password` que devuelve el token en la respuesta
+(CRITICAL 9.1); SEC-03, secreto del JWT con default en el código (CRITICAL 9.8 si se
+despliega sin `JWT_SECRET`); SEC-04, mass assignment al crear tarea
+(`status`/`createdAt` arbitrarios, MEDIUM 6.5); y SEC-06, enumeración de cuentas en
+`forgot-password` (404 vs 200, MEDIUM 5.3).
 
 ## 4.2 Control verificado (lo que sí funciona)
 
@@ -126,6 +127,11 @@ mensaje de error de login usa `role="alert"`, así que un lector lo anuncia.
 ## 4.4 User Stories de remediación
 
 ### US de Seguridad — hallazgo más crítico (SEC-01, IDOR)
+
+> De los dos hallazgos de esta plantilla, SEC-01 es el más grave. En el reporte
+> completo puntúan más alto SEC-02 (9.1, la respuesta de `forgot-password` expone
+> el token de reseteo, como anota la evidencia del issue #6) y SEC-03 (9.8, pero
+> solo si se despliega sin `JWT_SECRET`). Ver `security/REPORTE.md`.
 
 - **Como** equipo de producto de TaskFlow,
 - **Quiero** que solo los miembros de un proyecto puedan modificar sus tareas,

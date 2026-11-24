@@ -1,11 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
-import { WEB_URL } from './e2e/config';
+import { API_URL, WEB_URL } from './e2e/config';
 
 /**
  * Configuración del framework de E2E de TaskFlow.
  *
- * `npm run dev` levanta API (:3000) y frontend (:5173) juntos, así que un solo
- * webServer alcanza para las dos puntas. La base tiene que existir previamente:
+ * Playwright levanta API (:3000) y frontend (:5173) si no están corriendo y
+ * espera a que respondan. La base tiene que existir previamente:
  * `npm run db:setup` una vez.
  */
 export default defineConfig({
@@ -32,10 +32,20 @@ export default defineConfig({
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
-  webServer: {
-    command: 'npm run dev',
-    url: WEB_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  // API y frontend por separado: Playwright espera a que los dos respondan
+  // (en CI la API puede tardar más que Vite en quedar lista).
+  webServer: [
+    {
+      command: 'npm run dev:server',
+      url: `${API_URL}/api/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      command: 'npm run dev:client',
+      url: WEB_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 });

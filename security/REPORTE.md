@@ -3,7 +3,10 @@
 Auditoría sobre TaskFlow corriendo **en local**. Tres herramientas, como pide el
 práctico: OWASP ZAP (DAST), `npm audit` (SCA) y axe-core sobre Playwright (WCAG).
 Lo que una herramienta no detecta —autorización, JWT, lógica de negocio— se
-verificó a mano. La severidad usa CVSS v3.1; los vectores son estimados.
+verificó a mano. La severidad usa CVSS v3.1: el vector de cada hallazgo es una
+estimación nuestra, y el puntaje sale de ese vector con la calculadora de FIRST
+(https://www.first.org/cvss/calculator/3.1). Rangos: 0,1–3,9 LOW · 4,0–6,9 MEDIUM
+· 7,0–8,9 HIGH · 9,0–10 CRITICAL.
 
 - Commit auditado: `1296d38`
 - Entorno: macOS 27.2 · API Node 24 (Express + SQLite) · Chromium (Playwright 1.63.0) · 2026-11-03
@@ -16,13 +19,13 @@ verificó a mano. La severidad usa CVSS v3.1; los vectores son estimados.
 
 | ID | Título | OWASP | Severidad | CVSS |
 |----|--------|-------|-----------|------|
-| SEC-01 | IDOR: editar/borrar tareas de otro proyecto | A01 Broken Access Control | HIGH | 8.1 |
-| SEC-02 | Toma de cuenta: forgot-password devuelve el token de reseteo | A07 Identification & Auth Failures | HIGH | 8.1 |
+| SEC-01 | IDOR: editar/borrar tareas de otro proyecto | A01 Broken Access Control | HIGH | 8.3 |
+| SEC-02 | Toma de cuenta: forgot-password devuelve el token de reseteo | A07 Identification & Auth Failures | CRITICAL | 9.1 |
 | SEC-03 | Secreto del JWT con valor por defecto en el código | A02 Cryptographic Failures | ALTO/CRÍTICO (condicional) | 9.8 si se despliega sin `JWT_SECRET` |
-| SEC-04 | Mass assignment: `status` y `createdAt` arbitrarios al crear tarea | A04 Insecure Design | MEDIUM | 5.3 |
-| SEC-05 | Security misconfiguration: sin headers de seguridad | A05 Security Misconfiguration | MEDIUM | 5.3 |
+| SEC-04 | Mass assignment: `status` y `createdAt` arbitrarios al crear tarea | A04 Insecure Design | MEDIUM | 6.5 |
+| SEC-05 | Security misconfiguration: sin headers de seguridad | A05 Security Misconfiguration | MEDIUM | 4.3 |
 | SEC-06 | Enumeración de cuentas en forgot-password / login | A07 Identification & Auth Failures | MEDIUM | 5.3 |
-| SEC-07 | Dependencias con CVEs conocidos (`npm audit`) | A06 Vulnerable Components | MEDIUM | — |
+| SEC-07 | Dependencias con CVEs conocidos (`npm audit`) | A06 Vulnerable Components | MEDIUM | — (cada CVE trae el suyo) |
 | ACC-01 | Inputs sin label asociado en el detalle de tarea | WCAG 4.1.2 (A) | — | crítico (axe) |
 
 SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
@@ -32,7 +35,7 @@ SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
 
 ## SEC-01 · IDOR en PATCH y DELETE /api/tasks/:id
 
-- **Severidad:** HIGH · CVSS 8.1 (`AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:H`, estimado)
+- **Severidad:** HIGH · CVSS 8.3 (`AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:H`)
 - **Descripción:** cualquier usuario autenticado puede editar o borrar tareas de
   un proyecto del que no es miembro. `GET /tasks/:id` sí devuelve 403; `PATCH` y
   `DELETE` no tienen el middleware de membresía.
@@ -48,7 +51,7 @@ SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
 
 ## SEC-02 · Toma de cuenta vía forgot-password
 
-- **Severidad:** HIGH · CVSS 8.1 (`AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`, estimado)
+- **Severidad:** CRITICAL · CVSS 9.1 (`AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`)
 - **Descripción:** `POST /api/auth/forgot-password` devuelve el token de reseteo
   **en el cuerpo de la respuesta HTTP**. Cualquiera que conozca un email puede
   pedir el token y resetear la contraseña sin acceso al correo de la víctima.
@@ -64,7 +67,9 @@ SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
 
 ## SEC-03 · Secreto del JWT con valor por defecto en el código
 
-- **Severidad:** ALTO en desarrollo / **CRÍTICO 9.8** si se despliega sin `JWT_SECRET`
+- **Severidad:** ALTO en desarrollo / **CRITICAL 9.8** si se despliega sin `JWT_SECRET`
+  (`AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`: sin login previo se forja un token de
+  cualquier usuario, con lectura, escritura y borrado totales)
 - **Descripción:** `server/src/middleware/auth.ts` usa
   `process.env.JWT_SECRET ?? 'taskflow-dev-secret'`. Si la variable no está
   definida, el secreto queda fijo y público en el repo: cualquiera puede forjar un
@@ -77,7 +82,7 @@ SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
 
 ## SEC-04 · Mass assignment al crear tarea
 
-- **Severidad:** MEDIUM · CVSS 5.3 (`AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N`, estimado)
+- **Severidad:** MEDIUM · CVSS 6.5 (`AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N`)
 - **Descripción:** `createTask` hace `data: { ...body, ... }`, así que acepta
   campos que no deberían venir del cliente. Se puede crear una tarea que **nace en
   `DONE`** (saltea la máquina de estados de US-06) y con un `createdAt` arbitrario.
@@ -91,7 +96,9 @@ SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
 
 ## SEC-05 · Security misconfiguration: faltan headers
 
-- **Severidad:** MEDIUM · CVSS 5.3 (estimado)
+- **Severidad:** MEDIUM · CVSS 4.3 (`AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N`: el
+  escenario más directo es clickjacking, que necesita que la víctima interactúe
+  con una página del atacante y solo compromete la integridad de forma parcial)
 - **Descripción (ZAP):** la API y el frontend no envían `X-Content-Type-Options`,
   `Content-Security-Policy`, `X-Frame-Options` ni `Permissions-Policy`; CORS está
   abierto (`Access-Control-Allow-Origin: *`) y la API expone `X-Powered-By: Express`.
@@ -102,7 +109,8 @@ SEC-01 y SEC-02 ya estaban reportados como bugs funcionales en `docs/issues/`
 
 ## SEC-06 · Enumeración de cuentas
 
-- **Severidad:** MEDIUM · CVSS 5.3 (estimado)
+- **Severidad:** MEDIUM · CVSS 5.3 (`AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N`: sin
+  login, cualquiera confirma qué emails tienen cuenta; no modifica datos)
 - **Descripción:** `forgot-password` responde 404 para un email inexistente y 200
   para uno registrado, así que revela qué direcciones tienen cuenta. En login hay
   bloqueo a los 5 intentos fallidos (15 min), pero responde 401, no 429, y el

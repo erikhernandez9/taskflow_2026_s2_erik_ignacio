@@ -168,7 +168,7 @@ La suite cubre autenticación, proyectos, tareas y comentarios, incluidas las hi
 npm test
 ```
 
-**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy `npm test` da 14 fallos de 81, y `npm run test:e2e`, 7 de 70 (todos bugs de vencimiento y etiquetas; la violación de accesibilidad ACC-01 ya se corrigió).
+**La suite no corre en verde, a propósito.** Hay tests que fallan porque describen el comportamiento correcto según la especificación y la app todavía no lo cumple. No se ajustan para que pasen: cada uno tiene su reporte en `docs/issues/`. Hoy, con la zona horaria de Uruguay (la del pipeline), `npm test` da 66 fallos de 196 y `npm run test:e2e`, 7 de 70 (todos bugs de vencimiento y etiquetas; la violación de accesibilidad ACC-01 ya se corrigió). Con `TZ=UTC` los fallos de `npm test` bajan a 24, porque el bug #4 solo aparece detrás de UTC.
 
 ## Tests de contrato
 
@@ -205,6 +205,23 @@ Los hallazgos, con CVSS y pasos de reproducción, están en `security/REPORTE.md
 el reporte del práctico (Módulo 2) en `docs/clase12-m2-reporte.md`, y la US de
 remediación en `security/user-story-remediacion.md`. `npm audit` cubre las
 dependencias (SCA).
+
+## Pipeline de CI
+
+`.github/workflows/ci.yml` corre en cada push y en cada PR, con seis jobs
+independientes (sin `needs`, para que un rojo no oculte a los demás): build del
+servidor, lint (ESLint), tests, cobertura con umbral (80 % de líneas y 40 % de
+ramas), build del cliente y E2E con Playwright. El pipeline **informa, no
+bloquea**: los tests rojos contra la spec son bugs reportados, no se apagan.
+La cobertura y el reporte de Playwright (con traces de los fallos) quedan como
+artefactos de cada corrida, en la pestaña Actions.
+
+```bash
+npm run lint   # ESLint sobre server/src, con server/eslint.config.mjs
+```
+
+La lectura de cada etapa en rojo está en `docs/clase12-pipeline.md`, el uso de
+IA en `docs/ia/` y el informe de estado en `docs/informe-estado.md`.
 
 ## Reportes de bugs
 
