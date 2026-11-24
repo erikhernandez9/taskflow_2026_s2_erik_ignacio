@@ -24,7 +24,7 @@ expanden en **57 casos**. Usó solo los endpoints y helpers del prompt.
 |---|---|---|
 | Verde y correcto | 44 | c1 (2), c2 (3), c3 ida y vuelta por POST y PATCH con 5 fechas borde (10), c4 (4), c5 (3), c6 con 8 formatos inválidos por POST y PATCH (16) + 2 de "no modifica / no crea", c7 (3), c8 control positivo del dueño (1) |
 | Verde pero no prueba nada | 6 | Los 6 tests de c3 que cambian `process.env.TZ` dentro del test (5 zonas + "cambiar la zona entre escritura y lectura"). Jest aísla `process.env` por archivo, así que **la zona del servidor nunca cambia**: lo comprobamos con una sonda (`new Date('2026-09-15').getDate()` da 15 antes y después de poner `Pacific/Pago_Pago`). Pasan en UTC aunque la API tenga el bug de zona horaria. |
-| Rojo por bug real | 7 | c8: un no-miembro cambia la fecha (200 en vez de 403), la fecha queda cambiada, y puede borrarla con `null` (3 casos, issue #1). c6: `2026-02-30` y `2026-02-29` (2026 no es bisiesto) se aceptan por POST y PATCH y se guardan como 2 y 1 de marzo (4 casos, **bug nuevo, issue #13**). |
+| Rojo por bug real | 7 | c8: un no-miembro cambia la fecha (200 en vez de 403), la fecha queda cambiada, y puede borrarla con `null` (3 casos, issue #1). c6: `2026-02-30` y `2026-02-29` (2026 no es bisiesto) se aceptan por POST y PATCH y se guardan como 2 y 1 de marzo (4 casos, **bug nuevo, issue #14**). |
 | Rojo por test mal escrito | 0 | — |
 | Alucinado | 0 | No inventó endpoints ni criterios. |
 
@@ -72,7 +72,7 @@ nuevos, que se expanden en **24 casos**.
 |---|---|---|
 | Verde y correcto | 20 | Fechas de cambio de horario (4), fecha con hora (3), c6 mes/día `00`, espacios, barras, año de 5 dígitos, booleano, objeto, arreglo (8), c5 (2), c7 ayer/hoy (2), c8 POST de un no-miembro (1) |
 | Verde pero no prueba nada | 0 | — |
-| Rojo por bug real | 4 | c6: 31 de abril, `1900-02-29` y `2100-02-29` se aceptan (issue #13). c8: un usuario dueño de otro proyecto cambia la fecha (issue #1) |
+| Rojo por bug real | 4 | c6: 31 de abril, `1900-02-29` y `2100-02-29` se aceptan (issue #14). c8: un usuario dueño de otro proyecto cambia la fecha (issue #1) |
 | Rojo por test mal escrito | 0 | — |
 | Alucinado | 0 | — |
 
@@ -84,7 +84,7 @@ nuevos, que se expanden en **24 casos**.
 | Verdes que no prueban nada | 6 | 0 |
 | Rojos por bug real (`TZ=UTC`) | 7 | 11 |
 | Rojos en UTC-3 | 36 (6 son de los tests que no prueban nada) | 52 |
-| Bugs distintos detectados | 3 (#1, #4 y el nuevo #13) | 3, con más variantes de #13 y de #1 |
+| Bugs distintos detectados | 3 (#1, #4 y el nuevo #14) | 3, con más variantes de #14 y de #1 |
 | Cobertura de líneas / ramas de toda la suite\* | 82,95 % / 58,03 % | 85,87 % / 67,41 % |
 
 \* La columna final también incluye los tests de caracterización
@@ -112,7 +112,7 @@ en el repo: lo que se evalúa es el archivo, no la conversación.
 | c3 · misma fecha en cualquier zona | `c3 · ...` (14) | Verde | Rojo (#4) |
 | c4 · opcional | `c4 · ...` (4) | Verde | 3 verdes, 1 rojo (#4) |
 | c5 · se quita con `null` | `c5 · ...` (5) | Verde | 2 verdes, 3 rojos (#4) |
-| c6 · formato inválido → 400 | `c6 · ...` (33) | 26 verdes, 7 rojos (#13) | 17 verdes, 16 rojos (#4 y #13) |
+| c6 · formato inválido → 400 | `c6 · ...` (33) | 26 verdes, 7 rojos (#14) | 17 verdes, 16 rojos (#4 y #14) |
 | c7 · admite fechas pasadas | `c7 · ...` (5) | Verde | Rojo (#4) |
 | c7 · "la tarea se considera vencida" | — | **Sin test**: no hay campo ni endpoint que lo exponga | — |
 | c8 · solo miembros modifican (403) | `c8 · ...` (6) | 2 verdes, 4 rojos (#1) | 1 verde, 5 rojos (#1 y #4) |
