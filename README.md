@@ -206,6 +206,23 @@ el reporte del práctico (Módulo 2) en `docs/clase12-m2-reporte.md`, y la US de
 remediación en `security/user-story-remediacion.md`. `npm audit` cubre las
 dependencias (SCA).
 
+## Pipeline de CI
+
+`.github/workflows/ci.yml` corre en cada push y en cada PR, con seis jobs
+independientes (sin `needs`, para que un rojo no oculte a los demás): build del
+servidor, lint (ESLint), tests, cobertura con umbral (80 % de líneas y 40 % de
+ramas), build del cliente y E2E con Playwright. El pipeline **informa, no
+bloquea**: los tests rojos contra la spec son bugs reportados, no se apagan.
+La cobertura y el reporte de Playwright (con traces de los fallos) quedan como
+artefactos de cada corrida, en la pestaña Actions.
+
+```bash
+npm run lint   # ESLint sobre server/src, con server/eslint.config.mjs
+```
+
+La lectura de cada etapa en rojo está en `docs/clase12-pipeline.md`, el uso de
+IA en `docs/ia/` y el informe de estado en `docs/informe-estado.md`.
+
 ## Reportes de bugs
 
 Cada bug tiene su reporte en `docs/issues/`. `docs/issues/crear-issues.sh` los carga como GitHub Issues; requiere `gh auth login`.
