@@ -129,8 +129,9 @@ mensaje de error de login usa `role="alert"`, así que un lector lo anuncia.
 ### US de Seguridad — hallazgo más crítico (SEC-01, IDOR)
 
 > De los dos hallazgos de esta plantilla, SEC-01 es el más grave. En el reporte
-> completo, SEC-02 (9.1) puntúa más alto; está en el issue #6 y su remediación es no
-> devolver el token en la respuesta (ver `security/REPORTE.md`).
+> completo puntúan más alto SEC-02 (9.1, la respuesta de `forgot-password` expone
+> el token de reseteo, como anota la evidencia del issue #6) y SEC-03 (9.8, pero
+> solo si se despliega sin `JWT_SECRET`). Ver `security/REPORTE.md`.
 
 - **Como** equipo de producto de TaskFlow,
 - **Quiero** que solo los miembros de un proyecto puedan modificar sus tareas,

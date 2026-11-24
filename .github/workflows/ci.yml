@@ -9,8 +9,15 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: 22
+  # El runner corre en UTC y ahí el bug de la fecha corrida (issue #4) no se ve.
+  # Fijamos la zona de nuestras máquinas en todos los jobs para que el resultado
+  # no dependa de dónde corre el pipeline.
+  TZ: America/Montevideo
 
 jobs:
   build-server:
@@ -55,11 +62,6 @@ jobs:
   tests:
     name: Tests (unit e integración)
     runs-on: ubuntu-latest
-    env:
-      # El runner corre en UTC y ahí el bug de la fecha corrida (issue #4) no se
-      # ve. Fijamos la zona de nuestras máquinas para que el resultado no dependa
-      # de dónde corre el pipeline.
-      TZ: America/Montevideo
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
