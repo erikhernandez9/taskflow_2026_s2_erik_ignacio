@@ -21,6 +21,10 @@ Evidencia completa: `npx jest tests/tasks-lifecycle.test.ts tests/projects-name-
 - **Severidad:** Alta (rotura de control de acceso)
 - **Endpoints:** `PATCH /api/tasks/:taskId`, `DELETE /api/tasks/:taskId`
 - **Evidencia:** `server/tests/tasks-lifecycle.test.ts` — tests "HALLAZGO #1" y "HALLAZGO #1 (bis)"
+- **Entorno:** macOS (Darwin 24.5.0), Node 22.21.1, Express + SQLite con Prisma (base por archivo de test generada por `tests/globalSetup.ts`), Jest 29 + Supertest 7, commit c884ef4 (Clase 5)
+- **Reproducibilidad:** Siempre (3/3 corridas). Es determinista: no depende de datos ni de zona horaria.
+- **Criterio de la spec violado:** US-12 c5: "Solo los miembros del proyecto al que pertenece la tarea pueden editarla (HTTP 403)". Ver también Convenciones › Autenticación 3.
+- **Issue de GitHub:** [#1](https://github.com/erikhernandez9/taskflow_2026_s2_erik_ignacio/issues/1)
 
 **Pasos para reproducir:**
 1. Usuario A crea un proyecto y una tarea dentro de él.
@@ -58,6 +62,11 @@ Mismo bug que #1, cubre la variante DELETE (test "HALLAZGO #1 (bis)"). Se numer�
 junto al #1 porque comparten causa raíz; se deja aparte en el reporte por si se
 quiere trackear como ticket independiente.
 
+- **Entorno:** macOS (Darwin 24.5.0), Node 22.21.1, Express + SQLite con Prisma (base por archivo de test generada por `tests/globalSetup.ts`), Jest 29 + Supertest 7, commit c884ef4 (Clase 5)
+- **Reproducibilidad:** Siempre (3/3 corridas). Es determinista: no depende de datos ni de zona horaria.
+- **Criterio de la spec violado:** US-13 c1: "Solo los miembros del proyecto al que pertenece la tarea pueden eliminarla (HTTP 403)". Ver también Convenciones › Autenticación 3.
+- **Issue de GitHub:** [#2](https://github.com/erikhernandez9/taskflow_2026_s2_erik_ignacio/issues/2)
+
 ---
 
 ## HALLAZGO #3 — Transición TODO → DONE no está bloqueada pese a la especificación documentada
@@ -65,6 +74,10 @@ quiere trackear como ticket independiente.
 - **Severidad:** Media (regla de negocio inconsistente con su propia documentación)
 - **Endpoint:** `PATCH /api/tasks/:taskId` (cambio de `status`)
 - **Evidencia:** `server/tests/tasks-lifecycle.test.ts` — test "HALLAZGO #3"
+- **Entorno:** macOS (Darwin 24.5.0), Node 22.21.1, Express + SQLite con Prisma (base por archivo de test generada por `tests/globalSetup.ts`), Jest 29 + Supertest 7, commit c884ef4 (Clase 5)
+- **Reproducibilidad:** Siempre (3/3 corridas). Es determinista.
+- **Criterio de la spec violado:** US-06 c2: "NO está permitido ir de TODO directamente a DONE" (y c4: "Una transición inválida devuelve HTTP 422 describiendo el problema").
+- **Issue de GitHub:** [#3](https://github.com/erikhernandez9/taskflow_2026_s2_erik_ignacio/issues/3)
 
 **Pasos para reproducir:**
 1. Crear una tarea (queda en estado `TODO`).
@@ -94,6 +107,10 @@ si la regla de negocio real exige pasar por `IN_PROGRESS`.
 - **Severidad:** Media (corrupción silenciosa de datos, dependiente del entorno)
 - **Endpoint:** `POST /api/projects/:projectId/tasks` (y por extensión `PATCH` con `dueDate`)
 - **Evidencia:** `server/tests/tasks-lifecycle.test.ts` — test "HALLAZGO #4"
+- **Entorno:** macOS (Darwin 24.5.0), Node 22.21.1, Express + SQLite con Prisma (base por archivo de test generada por `tests/globalSetup.ts`), Jest 29 + Supertest 7, commit c884ef4 (Clase 5)
+- **Reproducibilidad:** Siempre en servidores con zona horaria detrás de UTC (p. ej. UTC-3, America/Montevideo); no se reproduce con TZ=UTC ni en zonas adelantadas como Asia/Tokyo (verificado con `new Date("2026-01-15")` + getters locales, igual que `formatDueDate` en `server/src/lib/ids.ts`).
+- **Criterio de la spec violado:** US-16 c3: "La fecha que se devuelve es siempre la misma que se cargó, sin importar la zona horaria del cliente ni la del servidor". Ver también Convenciones › Fechas 2.
+- **Issue de GitHub:** [#4](https://github.com/erikhernandez9/taskflow_2026_s2_erik_ignacio/issues/4)
 
 **Pasos para reproducir (en un servidor con timezone UTC-3, ej. Uruguay/Argentina):**
 1. Crear una tarea con `{ "title": "Tarea con fecha", "dueDate": "2026-01-15" }`.
@@ -122,6 +139,10 @@ día 14 en hora local, y el día se corre hacia atrás.
 - **Severidad:** Baja/Media (permite datos inconsistentes con la regla documentada)
 - **Endpoint:** `POST /api/projects`
 - **Evidencia:** `server/tests/projects-name-validation.test.ts` — tests "HALLAZGO #5" y "HALLAZGO #5 (bis)"
+- **Entorno:** macOS (Darwin 24.5.0), Node 22.21.1, Express + SQLite con Prisma (base por archivo de test generada por `tests/globalSetup.ts`), Jest 29 + Supertest 7, commit c884ef4 (Clase 5)
+- **Reproducibilidad:** Siempre (3/3 corridas). Es determinista.
+- **Criterio de la spec violado:** US-03 c1: "El nombre del proyecto es obligatorio y tiene entre 3 y 100 caracteres".
+- **Issue de GitHub:** [#5](https://github.com/erikhernandez9/taskflow_2026_s2_erik_ignacio/issues/5)
 
 **Pasos para reproducir:**
 1. `POST /api/projects` con `{ "name": "ab" }` (2 caracteres) o `{ "name": "" }` (vacío).
